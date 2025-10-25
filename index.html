@@ -28,6 +28,28 @@
             font-family: 'Arial', sans-serif;
             position: fixed;
             -webkit-overflow-scrolling: touch;
+            margin: 0;
+            padding: 0;
+            /* Mobile fullscreen support */
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* Fullscreen support for mobile */
+        html:fullscreen, html:-webkit-full-screen, html:-moz-full-screen, html:-ms-fullscreen {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        body:fullscreen, body:-webkit-full-screen, body:-moz-full-screen, body:-ms-fullscreen {
+            width: 100% !important;
+            height: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
         
         /* Force everything to landscape - hide all content in portrait */
@@ -2022,17 +2044,89 @@
             game.start();
         }
 
-        // Fullscreen functions
+        // Enhanced Fullscreen functions for mobile
         function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.log("Space Battle: Fullscreen request failed:", err);
-                });
+            const elem = document.documentElement;
+            
+            // Check if already in fullscreen
+            if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
+                // Try different fullscreen methods for better mobile support
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(err => {
+                        console.log("Space Battle: Standard fullscreen failed:", err);
+                        tryMobileFullscreen();
+                    });
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen().catch(err => {
+                        console.log("Space Battle: Webkit fullscreen failed:", err);
+                        tryMobileFullscreen();
+                    });
+                } else if (elem.mozRequestFullScreen) {
+                    elem.mozRequestFullScreen().catch(err => {
+                        console.log("Space Battle: Mozilla fullscreen failed:", err);
+                        tryMobileFullscreen();
+                    });
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen().catch(err => {
+                        console.log("Space Battle: MS fullscreen failed:", err);
+                        tryMobileFullscreen();
+                    });
+                } else {
+                    tryMobileFullscreen();
+                }
             } else {
-                document.exitFullscreen().catch(err => {
-                    console.log("Space Battle: Exit fullscreen failed:", err);
-                });
+                // Exit fullscreen
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().catch(err => console.log("Exit fullscreen failed:", err));
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen().catch(err => console.log("Exit fullscreen failed:", err));
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen().catch(err => console.log("Exit fullscreen failed:", err));
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen().catch(err => console.log("Exit fullscreen failed:", err));
+                }
             }
+        }
+
+        function tryMobileFullscreen() {
+            // Mobile-specific fullscreen approach
+            const canvas = document.getElementById('gameCanvas');
+            if (canvas) {
+                // Try to make canvas fullscreen
+                if (canvas.webkitRequestFullscreen) {
+                    canvas.webkitRequestFullscreen();
+                } else if (canvas.mozRequestFullScreen) {
+                    canvas.mozRequestFullScreen();
+                } else if (canvas.msRequestFullscreen) {
+                    canvas.msRequestFullscreen();
+                } else {
+                    // Fallback: Hide browser UI elements
+                    hideMobileUI();
+                }
+            } else {
+                hideMobileUI();
+            }
+        }
+
+        function hideMobileUI() {
+            // Hide mobile browser UI elements
+            document.body.style.position = 'fixed';
+            document.body.style.top = '0';
+            document.body.style.left = '0';
+            document.body.style.width = '100vw';
+            document.body.style.height = '100vh';
+            document.body.style.overflow = 'hidden';
+            
+            // Force viewport to full screen
+            const viewport = document.querySelector('meta[name="viewport"]');
+            if (viewport) {
+                viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+            }
+            
+            // Hide address bar on mobile
+            setTimeout(() => {
+                window.scrollTo(0, 1);
+            }, 100);
         }
 
         function closeGame() {
@@ -2043,6 +2137,63 @@
 
         // Add global access to MenuUI
         window.MenuUI = MenuUI;
+
+        // Enhanced mobile fullscreen event listeners
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+        function handleFullscreenChange() {
+            const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
+                                 document.mozFullScreenElement || document.msFullscreenElement);
+            
+            if (isFullscreen) {
+                // Entered fullscreen - ensure proper sizing
+                document.body.style.width = '100vw';
+                document.body.style.height = '100vh';
+                document.body.style.margin = '0';
+                document.body.style.padding = '0';
+                
+                // Resize canvas if game is running
+                if (window.game && window.game.initializeCanvas) {
+                    setTimeout(() => {
+                        window.game.initializeCanvas();
+                    }, 100);
+                }
+            } else {
+                // Exited fullscreen - restore normal sizing
+                document.body.style.width = '100%';
+                document.body.style.height = '100%';
+            }
+        }
+
+        // Mobile-specific fullscreen improvements
+        if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            // Add touch event to prevent zoom
+            document.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            // Prevent double-tap zoom
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(e) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+
+            // Hide address bar on mobile
+            window.addEventListener('load', function() {
+                setTimeout(function() {
+                    window.scrollTo(0, 1);
+                }, 0);
+            });
+        }
     </script>
 </body>
 </html>
