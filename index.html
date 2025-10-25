@@ -365,6 +365,24 @@
             right: 20px;
         }
 
+        /* Fullscreen button stays within fullscreen area */
+        #gameSection:fullscreen .control-btn,
+        #gameSection:-webkit-full-screen .control-btn,
+        #gameSection:-moz-full-screen .control-btn,
+        #gameSection:-ms-fullscreen .control-btn {
+            position: fixed !important;
+            z-index: 1000 !important;
+        }
+
+        /* Ensure buttons are visible in fullscreen */
+        html:fullscreen .control-btn,
+        html:-webkit-full-screen .control-btn,
+        html:-moz-full-screen .control-btn,
+        html:-ms-fullscreen .control-btn {
+            position: fixed !important;
+            z-index: 1000 !important;
+        }
+
         .control-btn:hover {
             background: rgba(0, 255, 136, 1);
             transform: scale(1.1);
@@ -2073,35 +2091,35 @@
             game.start();
         }
 
-        // Enhanced Fullscreen functions for mobile
+        // Enhanced Fullscreen functions for mobile - keeps buttons in fullscreen
         function toggleFullscreen() {
-            const elem = document.documentElement;
+            const gameSection = document.getElementById('gameSection');
             
             // Check if already in fullscreen
             if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
-                // Try different fullscreen methods for better mobile support
-                if (elem.requestFullscreen) {
-                    elem.requestFullscreen().catch(err => {
-                        console.log("Space Battle: Standard fullscreen failed:", err);
-                        tryMobileFullscreen();
+                // Try to make game section fullscreen (keeps buttons inside)
+                if (gameSection.requestFullscreen) {
+                    gameSection.requestFullscreen().catch(err => {
+                        console.log("Space Battle: Game section fullscreen failed:", err);
+                        tryDocumentFullscreen();
                     });
-                } else if (elem.webkitRequestFullscreen) {
-                    elem.webkitRequestFullscreen().catch(err => {
-                        console.log("Space Battle: Webkit fullscreen failed:", err);
-                        tryMobileFullscreen();
+                } else if (gameSection.webkitRequestFullscreen) {
+                    gameSection.webkitRequestFullscreen().catch(err => {
+                        console.log("Space Battle: Game section webkit fullscreen failed:", err);
+                        tryDocumentFullscreen();
                     });
-                } else if (elem.mozRequestFullScreen) {
-                    elem.mozRequestFullScreen().catch(err => {
-                        console.log("Space Battle: Mozilla fullscreen failed:", err);
-                        tryMobileFullscreen();
+                } else if (gameSection.mozRequestFullScreen) {
+                    gameSection.mozRequestFullScreen().catch(err => {
+                        console.log("Space Battle: Game section moz fullscreen failed:", err);
+                        tryDocumentFullscreen();
                     });
-                } else if (elem.msRequestFullscreen) {
-                    elem.msRequestFullscreen().catch(err => {
-                        console.log("Space Battle: MS fullscreen failed:", err);
-                        tryMobileFullscreen();
+                } else if (gameSection.msRequestFullscreen) {
+                    gameSection.msRequestFullscreen().catch(err => {
+                        console.log("Space Battle: Game section ms fullscreen failed:", err);
+                        tryDocumentFullscreen();
                     });
                 } else {
-                    tryMobileFullscreen();
+                    tryDocumentFullscreen();
                 }
             } else {
                 // Exit fullscreen
@@ -2114,6 +2132,35 @@
                 } else if (document.msExitFullscreen) {
                     document.msExitFullscreen().catch(err => console.log("Exit fullscreen failed:", err));
                 }
+            }
+        }
+
+        function tryDocumentFullscreen() {
+            const elem = document.documentElement;
+            
+            // Fallback to document fullscreen
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch(err => {
+                    console.log("Space Battle: Document fullscreen failed:", err);
+                    tryMobileFullscreen();
+                });
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen().catch(err => {
+                    console.log("Space Battle: Document webkit fullscreen failed:", err);
+                    tryMobileFullscreen();
+                });
+            } else if (elem.mozRequestFullScreen) {
+                elem.mozRequestFullScreen().catch(err => {
+                    console.log("Space Battle: Document moz fullscreen failed:", err);
+                    tryMobileFullscreen();
+                });
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullscreen().catch(err => {
+                    console.log("Space Battle: Document ms fullscreen failed:", err);
+                    tryMobileFullscreen();
+                });
+            } else {
+                tryMobileFullscreen();
             }
         }
 
@@ -2197,20 +2244,46 @@
             
             if (isFullscreen) {
                 // Entered fullscreen - ensure proper sizing for mobile
-                document.documentElement.style.width = '100vw';
-                document.documentElement.style.height = '100vh';
-                document.documentElement.style.margin = '0';
-                document.documentElement.style.padding = '0';
-                document.documentElement.style.overflow = 'hidden';
+                const gameSection = document.getElementById('gameSection');
                 
-                document.body.style.width = '100vw';
-                document.body.style.height = '100vh';
-                document.body.style.margin = '0';
-                document.body.style.padding = '0';
-                document.body.style.overflow = 'hidden';
-                document.body.style.position = 'fixed';
-                document.body.style.top = '0';
-                document.body.style.left = '0';
+                // If game section is in fullscreen, ensure it covers everything
+                if (gameSection && (gameSection === document.fullscreenElement || 
+                    gameSection === document.webkitFullscreenElement ||
+                    gameSection === document.mozFullScreenElement ||
+                    gameSection === document.msFullscreenElement)) {
+                    
+                    gameSection.style.width = '100vw';
+                    gameSection.style.height = '100vh';
+                    gameSection.style.margin = '0';
+                    gameSection.style.padding = '0';
+                    gameSection.style.overflow = 'hidden';
+                    gameSection.style.position = 'fixed';
+                    gameSection.style.top = '0';
+                    gameSection.style.left = '0';
+                    
+                    // Ensure buttons stay visible in fullscreen
+                    const buttons = gameSection.querySelectorAll('.control-btn');
+                    buttons.forEach(btn => {
+                        btn.style.position = 'fixed';
+                        btn.style.zIndex = '1000';
+                    });
+                } else {
+                    // Document fullscreen fallback
+                    document.documentElement.style.width = '100vw';
+                    document.documentElement.style.height = '100vh';
+                    document.documentElement.style.margin = '0';
+                    document.documentElement.style.padding = '0';
+                    document.documentElement.style.overflow = 'hidden';
+                    
+                    document.body.style.width = '100vw';
+                    document.body.style.height = '100vh';
+                    document.body.style.margin = '0';
+                    document.body.style.padding = '0';
+                    document.body.style.overflow = 'hidden';
+                    document.body.style.position = 'fixed';
+                    document.body.style.top = '0';
+                    document.body.style.left = '0';
+                }
                 
                 // Mobile-specific optimizations
                 if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
@@ -2236,6 +2309,14 @@
                 document.body.style.width = '100%';
                 document.body.style.height = '100%';
                 document.body.style.position = 'fixed';
+                
+                // Restore game section
+                const gameSection = document.getElementById('gameSection');
+                if (gameSection) {
+                    gameSection.style.width = '100%';
+                    gameSection.style.height = '100%';
+                    gameSection.style.position = 'fixed';
+                }
             }
         }
 
