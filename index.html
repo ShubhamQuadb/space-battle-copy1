@@ -972,8 +972,8 @@
                 this.gameSpeed = this.calculateSpeedMultiplier(this.level);
                 console.log(`Level ${this.level}: Speed multiplier ${this.gameSpeed}x`);
 
-                // Create player (on left side)
-                this.player = new Player(80, this.height / 2);
+                // Create player (in center)
+                this.player = new Player(this.width / 2 - 25, this.height / 2);
 
                 // Update UI
                 this.updateUI();
@@ -1189,13 +1189,13 @@
                     position: fixed;
                     top: 0;
                     left: 0;
-                    width: 100%;
-                    height: 100%;
+                    width: 100vw;
+                    height: 100vh;
                     background: rgba(0, 0, 0, 0.8);
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    z-index: 1000;
+                    z-index: 10000;
                 `;
                 
                 popup.innerHTML = `
@@ -1465,8 +1465,8 @@
                     this.y += (dy / distance) * this.speed;
                 }
 
-                // Keep player on screen (horizontal bounds)
-                this.x = Math.max(50, Math.min(this.x, 200)); // Left side of screen
+                // Keep player on screen (center area)
+                this.x = Math.max(100, Math.min(this.x, 400)); // Center area of screen
                 this.y = Math.max(30, Math.min(this.y, 470)); // Vertical movement allowed
 
                 // Shooting
