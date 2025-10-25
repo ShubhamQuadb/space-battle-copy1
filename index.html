@@ -2112,22 +2112,18 @@
                 // Try to make game section fullscreen (keeps buttons inside)
                 if (gameSection.requestFullscreen) {
                     gameSection.requestFullscreen().catch(err => {
-                        console.log("Space Battle: Game section fullscreen failed:", err);
                         tryDocumentFullscreen();
                     });
                 } else if (gameSection.webkitRequestFullscreen) {
                     gameSection.webkitRequestFullscreen().catch(err => {
-                        console.log("Space Battle: Game section webkit fullscreen failed:", err);
                         tryDocumentFullscreen();
                     });
                 } else if (gameSection.mozRequestFullScreen) {
                     gameSection.mozRequestFullScreen().catch(err => {
-                        console.log("Space Battle: Game section moz fullscreen failed:", err);
                         tryDocumentFullscreen();
                     });
                 } else if (gameSection.msRequestFullscreen) {
                     gameSection.msRequestFullscreen().catch(err => {
-                        console.log("Space Battle: Game section ms fullscreen failed:", err);
                         tryDocumentFullscreen();
                     });
                 } else {
@@ -2136,13 +2132,13 @@
             } else {
                 // Exit fullscreen
                 if (document.exitFullscreen) {
-                    document.exitFullscreen().catch(err => console.log("Exit fullscreen failed:", err));
+                    document.exitFullscreen().catch(err => {});
                 } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen().catch(err => console.log("Exit fullscreen failed:", err));
+                    document.webkitExitFullscreen().catch(err => {});
                 } else if (document.mozCancelFullScreen) {
-                    document.mozCancelFullScreen().catch(err => console.log("Exit fullscreen failed:", err));
+                    document.mozCancelFullScreen().catch(err => {});
                 } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen().catch(err => console.log("Exit fullscreen failed:", err));
+                    document.msExitFullscreen().catch(err => {});
                 }
             }
         }
@@ -2153,22 +2149,18 @@
             // Fallback to document fullscreen
             if (elem.requestFullscreen) {
                 elem.requestFullscreen().catch(err => {
-                    console.log("Space Battle: Document fullscreen failed:", err);
                     tryMobileFullscreen();
                 });
             } else if (elem.webkitRequestFullscreen) {
                 elem.webkitRequestFullscreen().catch(err => {
-                    console.log("Space Battle: Document webkit fullscreen failed:", err);
                     tryMobileFullscreen();
                 });
             } else if (elem.mozRequestFullScreen) {
                 elem.mozRequestFullScreen().catch(err => {
-                    console.log("Space Battle: Document moz fullscreen failed:", err);
                     tryMobileFullscreen();
                 });
             } else if (elem.msRequestFullscreen) {
                 elem.msRequestFullscreen().catch(err => {
-                    console.log("Space Battle: Document ms fullscreen failed:", err);
                     tryMobileFullscreen();
                 });
             } else {
@@ -2197,7 +2189,7 @@
         }
 
         function hideMobileUI() {
-            // Enhanced mobile UI hiding - fixes gaps
+            // Silent mobile UI hiding - no notifications
             document.documentElement.style.width = '100vw';
             document.documentElement.style.height = '100vh';
             document.documentElement.style.margin = '0';
@@ -2212,27 +2204,6 @@
             document.body.style.margin = '0';
             document.body.style.padding = '0';
             document.body.style.overflow = 'hidden';
-            
-            // Force viewport to full screen with proper mobile settings
-            const viewport = document.querySelector('meta[name="viewport"]');
-            if (viewport) {
-                viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, minimal-ui');
-            }
-            
-            // Hide address bar and status bar on mobile
-            setTimeout(() => {
-                window.scrollTo(0, 1);
-                // Additional mobile optimizations
-                document.body.style.webkitTransform = 'translate3d(0,0,0)';
-                document.body.style.transform = 'translate3d(0,0,0)';
-            }, 100);
-            
-            // Force fullscreen on all elements
-            const allElements = document.querySelectorAll('*');
-            allElements.forEach(el => {
-                el.style.margin = '0';
-                el.style.padding = '0';
-            });
         }
 
         function closeGame() {
@@ -2309,13 +2280,12 @@
                     document.body.style.left = '0';
                 }
                 
-                // Mobile-specific optimizations
+                // Silent mobile optimizations - no notifications
                 if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                    // Force mobile fullscreen
+                    // Silent mobile fullscreen
                     setTimeout(() => {
                         document.body.style.webkitTransform = 'translate3d(0,0,0)';
                         document.body.style.transform = 'translate3d(0,0,0)';
-                        window.scrollTo(0, 1);
                     }, 50);
                 }
                 
