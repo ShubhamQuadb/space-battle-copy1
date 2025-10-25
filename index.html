@@ -190,7 +190,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 99999;
+            z-index: 999999;
             pointer-events: auto;
         }
 
@@ -199,19 +199,26 @@
         #menuOverlay:-webkit-full-screen,
         #menuOverlay:-moz-full-screen,
         #menuOverlay:-ms-fullscreen {
-            z-index: 99999 !important;
+            z-index: 999999 !important;
         }
 
         html:fullscreen #menuOverlay,
         html:-webkit-full-screen #menuOverlay,
         html:-moz-full-screen #menuOverlay,
         html:-ms-fullscreen #menuOverlay {
-            z-index: 99999 !important;
+            z-index: 999999 !important;
         }
 
         /* Ensure menu overlay is always on top */
         #menuOverlay {
-            z-index: 99999 !important;
+            z-index: 999999 !important;
+        }
+
+        /* Force menu overlay to be on top in all cases */
+        #menuOverlay * {
+            z-index: 1000000 !important;
+            position: relative !important;
+            pointer-events: auto !important;
         }
 
         .menu-content {
@@ -219,7 +226,7 @@
             color: #fff;
             max-width: 500px;
             width: 90%;
-            z-index: 100000;
+            z-index: 1000000;
             position: relative;
             pointer-events: auto;
         }
@@ -250,7 +257,7 @@
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 0.3px;
-            z-index: 100001;
+            z-index: 1000001;
             position: relative;
             pointer-events: auto;
         }
