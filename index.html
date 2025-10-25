@@ -1055,7 +1055,7 @@
                 // Update powerups
                 this.powerups = this.powerups.filter(powerup => {
                     powerup.update(deltaTime);
-                    return powerup.y < this.height + 50;
+                    return powerup.x > -50; // Remove powerups that go off left side
                 });
 
                 // Update particles
@@ -1102,8 +1102,8 @@
             spawnPowerup() {
                 const types = ['health', 'weapon', 'shield'];
                 const type = types[Math.floor(Math.random() * types.length)];
-                const x = Math.random() * (this.width - 30);
-                const y = -30;
+                const x = this.width + 30; // Spawn from right side
+                const y = Math.random() * (this.height - 30); // Random vertical position
 
                 this.powerups.push(new Powerup(x, y, type));
             }
@@ -2162,7 +2162,7 @@
             }
 
             update(deltaTime) {
-                this.y += this.speed;
+                this.x -= this.speed; // Move left (right to left)
             }
 
             apply(game) {
