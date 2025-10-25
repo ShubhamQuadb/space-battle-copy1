@@ -190,7 +190,28 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 100;
+            z-index: 99999;
+            pointer-events: auto;
+        }
+
+        /* Ensure menu overlay works in fullscreen */
+        #menuOverlay:fullscreen,
+        #menuOverlay:-webkit-full-screen,
+        #menuOverlay:-moz-full-screen,
+        #menuOverlay:-ms-fullscreen {
+            z-index: 99999 !important;
+        }
+
+        html:fullscreen #menuOverlay,
+        html:-webkit-full-screen #menuOverlay,
+        html:-moz-full-screen #menuOverlay,
+        html:-ms-fullscreen #menuOverlay {
+            z-index: 99999 !important;
+        }
+
+        /* Ensure menu overlay is always on top */
+        #menuOverlay {
+            z-index: 99999 !important;
         }
 
         .menu-content {
@@ -198,6 +219,9 @@
             color: #fff;
             max-width: 500px;
             width: 90%;
+            z-index: 100000;
+            position: relative;
+            pointer-events: auto;
         }
 
         .game-title {
@@ -226,6 +250,9 @@
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 0.3px;
+            z-index: 100001;
+            position: relative;
+            pointer-events: auto;
         }
 
         .menu-btn:hover {
@@ -1373,10 +1400,13 @@
                     gameSection.style.display = 'none';
                 }
                 
-                // Show menu overlay
+                // Show menu overlay with proper z-index
                 const menuOverlay = document.getElementById('menuOverlay');
                 if (menuOverlay) {
                     menuOverlay.style.display = 'flex';
+                    menuOverlay.style.zIndex = '10000';
+                    menuOverlay.style.pointerEvents = 'auto';
+                    console.log("Menu overlay shown with z-index 10000");
                 }
                 
                 // Show main menu
