@@ -838,6 +838,8 @@
 
                 this.width = rect.width;
                 this.height = rect.height;
+                
+                console.log(`Canvas initialized: width=${this.width}, height=${this.height}, rect=${rect.width}x${rect.height}`);
             }
 
             initializeAudio() {
@@ -972,8 +974,9 @@
                 this.gameSpeed = this.calculateSpeedMultiplier(this.level);
                 console.log(`Level ${this.level}: Speed multiplier ${this.gameSpeed}x`);
 
-                // Create player (in center)
+                // Create player (in center of screen)
                 this.player = new Player(this.width / 2 - 25, this.height / 2);
+                console.log(`Player starting at: x=${this.width / 2 - 25}, y=${this.height / 2}, width=${this.width}, height=${this.height}`);
 
                 // Update UI
                 this.updateUI();
@@ -1182,20 +1185,28 @@
                 this.gameRunning = false;
                 this.playSFX('levelUp');
                 
+                // Remove any existing popup first
+                const existingPopup = document.getElementById('levelCompletePopup');
+                if (existingPopup) {
+                    existingPopup.remove();
+                }
+                
                 // Create congratulations popup
                 const popup = document.createElement('div');
                 popup.id = 'levelCompletePopup';
                 popup.style.cssText = `
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100vw;
-                    height: 100vh;
-                    background: rgba(0, 0, 0, 0.8);
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    z-index: 10000;
+                    position: fixed !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    width: 100vw !important;
+                    height: 100vh !important;
+                    background: rgba(0, 0, 0, 0.9) !important;
+                    display: flex !important;
+                    justify-content: center !important;
+                    align-items: center !important;
+                    z-index: 99999 !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
                 `;
                 
                 popup.innerHTML = `
@@ -1262,6 +1273,14 @@
                 
                 document.body.appendChild(popup);
                 console.log(`Space Battle: Level ${this.level} completed! Showing congratulations popup.`);
+                
+                // Force show popup with timeout
+                setTimeout(() => {
+                    popup.style.display = 'flex';
+                    popup.style.visibility = 'visible';
+                    popup.style.opacity = '1';
+                    console.log("Popup should now be visible");
+                }, 100);
             }
 
             startNextLevel() {
