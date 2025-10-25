@@ -1191,6 +1191,11 @@
                     existingPopup.remove();
                 }
                 
+                // Check if we're in fullscreen mode
+                const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
+                                     document.mozFullScreenElement || document.msFullscreenElement);
+                console.log("Is fullscreen:", isFullscreen);
+                
                 // Create congratulations popup
                 const popup = document.createElement('div');
                 popup.id = 'levelCompletePopup';
@@ -1271,7 +1276,24 @@
                     </div>
                 `;
                 
-                document.body.appendChild(popup);
+                // Attach popup to correct element based on fullscreen mode
+                if (isFullscreen) {
+                    // In fullscreen mode, attach to the fullscreen element
+                    const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || 
+                                            document.mozFullScreenElement || document.msFullscreenElement;
+                    if (fullscreenElement) {
+                        fullscreenElement.appendChild(popup);
+                        console.log("Popup attached to fullscreen element");
+                    } else {
+                        document.body.appendChild(popup);
+                        console.log("Popup attached to body (fullscreen element not found)");
+                    }
+                } else {
+                    // Normal mode, attach to body
+                    document.body.appendChild(popup);
+                    console.log("Popup attached to body (normal mode)");
+                }
+                
                 console.log(`Space Battle: Level ${this.level} completed! Showing congratulations popup.`);
                 
                 // Force show popup with timeout
@@ -1280,7 +1302,41 @@
                     popup.style.visibility = 'visible';
                     popup.style.opacity = '1';
                     console.log("Popup should now be visible");
+                    
+                    // If still not visible in fullscreen, try exiting fullscreen temporarily
+                    if (isFullscreen && popup.offsetParent === null) {
+                        console.log("Popup not visible in fullscreen, trying to exit fullscreen temporarily");
+                        this.exitFullscreenTemporarily();
+                    }
                 }, 100);
+            }
+
+            exitFullscreenTemporarily() {
+                // Exit fullscreen temporarily to show modal
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().then(() => {
+                        console.log("Exited fullscreen for modal display");
+                        // Re-enter fullscreen after a delay
+                        setTimeout(() => {
+                            this.enterFullscreen();
+                        }, 2000);
+                    }).catch(err => console.log("Exit fullscreen failed:", err));
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen().then(() => {
+                        console.log("Exited fullscreen for modal display");
+                        setTimeout(() => {
+                            this.enterFullscreen();
+                        }, 2000);
+                    }).catch(err => console.log("Exit fullscreen failed:", err));
+                }
+            }
+
+            enterFullscreen() {
+                // Re-enter fullscreen
+                const gameSection = document.getElementById('gameSection');
+                if (gameSection && gameSection.requestFullscreen) {
+                    gameSection.requestFullscreen().catch(err => console.log("Re-enter fullscreen failed:", err));
+                }
             }
 
             startNextLevel() {
