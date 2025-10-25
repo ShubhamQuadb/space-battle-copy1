@@ -618,14 +618,81 @@
                 if (this.overlay && this.container) {
                     this.showMainMenu();
                     console.log("Space Battle: Menu system initialized successfully");
+                    
+                    // Add fullscreen change listener
+                    document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
+                    document.addEventListener('webkitfullscreenchange', () => this.handleFullscreenChange());
+                    document.addEventListener('mozfullscreenchange', () => this.handleFullscreenChange());
+                    document.addEventListener('MSFullscreenChange', () => this.handleFullscreenChange());
                 } else {
                     console.log("Space Battle: Menu elements not found");
+                }
+            },
+            
+            handleFullscreenChange: function() {
+                const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
+                                     document.mozFullScreenElement || document.msFullscreenElement);
+                console.log("Fullscreen changed, isFullscreen:", isFullscreen);
+                
+                if (isFullscreen && this.overlay) {
+                    // Get the fullscreen element
+                    const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || 
+                                            document.mozFullScreenElement || document.msFullscreenElement;
+                    
+                    if (fullscreenElement) {
+                        // Move menu overlay to fullscreen element
+                        fullscreenElement.appendChild(this.overlay);
+                        console.log("Menu moved to fullscreen element");
+                    }
+                    
+                    // Force menu to be visible in fullscreen
+                    this.overlay.style.display = 'flex';
+                    this.overlay.style.visibility = 'visible';
+                    this.overlay.style.opacity = '1';
+                    this.overlay.style.zIndex = '999999';
+                    this.overlay.style.pointerEvents = 'auto';
+                    this.overlay.style.position = 'fixed';
+                    this.overlay.style.top = '0';
+                    this.overlay.style.left = '0';
+                    this.overlay.style.width = '100vw';
+                    this.overlay.style.height = '100vh';
+                    
+                    // Force all buttons to be clickable
+                    setTimeout(() => {
+                        const menuButtons = document.querySelectorAll('.menu-btn');
+                        menuButtons.forEach(btn => {
+                            btn.style.zIndex = '1000001';
+                            btn.style.position = 'relative';
+                            btn.style.pointerEvents = 'auto';
+                            btn.style.cursor = 'pointer';
+                            console.log("Menu button made clickable in fullscreen");
+                        });
+                    }, 100);
+                    
+                    console.log("Menu forced to show in fullscreen");
+                } else {
+                    // Return menu to body when exiting fullscreen
+                    if (this.overlay && this.overlay.parentNode !== document.body) {
+                        document.body.appendChild(this.overlay);
+                        console.log("Menu returned to body");
+                    }
                 }
             },
             
             showMainMenu: function() {
                 console.log("Space Battle: Showing main menu");
                 this.currentScreen = 'main';
+                
+                // Force show menu overlay
+                if (this.overlay) {
+                    this.overlay.style.display = 'flex';
+                    this.overlay.style.visibility = 'visible';
+                    this.overlay.style.opacity = '1';
+                    this.overlay.style.zIndex = '999999';
+                    this.overlay.style.pointerEvents = 'auto';
+                    console.log("Menu overlay forced to show");
+                }
+                
                 if (this.container) {
                     this.container.innerHTML = `
                         <h1 class="game-title">SPACE BATTLE</h1>
@@ -639,6 +706,39 @@
                         </div>
                     `;
                 }
+                
+                // Force all menu elements to be clickable
+                setTimeout(() => {
+                    const menuButtons = document.querySelectorAll('.menu-btn');
+                    menuButtons.forEach(btn => {
+                        btn.style.zIndex = '1000001';
+                        btn.style.position = 'relative';
+                        btn.style.pointerEvents = 'auto';
+                        btn.style.cursor = 'pointer';
+                        
+                        // Add direct event listeners to ensure clicks work
+                        btn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log("Menu button clicked:", this.textContent);
+                            
+                            // Handle button clicks directly
+                            if (this.classList.contains('start')) {
+                                MenuUI.startGame();
+                            } else if (this.classList.contains('options')) {
+                                MenuUI.showOptions();
+                            } else if (this.classList.contains('stats')) {
+                                MenuUI.showStats();
+                            } else if (this.classList.contains('help')) {
+                                MenuUI.showHelp();
+                            } else if (this.classList.contains('exit')) {
+                                MenuUI.exitGame();
+                            }
+                        });
+                        
+                        console.log("Menu button z-index set:", btn.style.zIndex);
+                    });
+                }, 100);
             },
             
             showOptions: function() {
