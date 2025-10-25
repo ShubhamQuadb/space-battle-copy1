@@ -190,35 +190,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 999999;
-            pointer-events: auto;
-        }
-
-        /* Ensure menu overlay works in fullscreen */
-        #menuOverlay:fullscreen,
-        #menuOverlay:-webkit-full-screen,
-        #menuOverlay:-moz-full-screen,
-        #menuOverlay:-ms-fullscreen {
-            z-index: 999999 !important;
-        }
-
-        html:fullscreen #menuOverlay,
-        html:-webkit-full-screen #menuOverlay,
-        html:-moz-full-screen #menuOverlay,
-        html:-ms-fullscreen #menuOverlay {
-            z-index: 999999 !important;
-        }
-
-        /* Ensure menu overlay is always on top */
-        #menuOverlay {
-            z-index: 999999 !important;
-        }
-
-        /* Force menu overlay to be on top in all cases */
-        #menuOverlay * {
-            z-index: 1000000 !important;
-            position: relative !important;
-            pointer-events: auto !important;
+            z-index: 100;
         }
 
         .menu-content {
@@ -226,9 +198,6 @@
             color: #fff;
             max-width: 500px;
             width: 90%;
-            z-index: 1000000;
-            position: relative;
-            pointer-events: auto;
         }
 
         .game-title {
@@ -257,9 +226,6 @@
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 0.3px;
-            z-index: 1000001;
-            position: relative;
-            pointer-events: auto;
         }
 
         .menu-btn:hover {
@@ -618,81 +584,14 @@
                 if (this.overlay && this.container) {
                     this.showMainMenu();
                     console.log("Space Battle: Menu system initialized successfully");
-                    
-                    // Add fullscreen change listener
-                    document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
-                    document.addEventListener('webkitfullscreenchange', () => this.handleFullscreenChange());
-                    document.addEventListener('mozfullscreenchange', () => this.handleFullscreenChange());
-                    document.addEventListener('MSFullscreenChange', () => this.handleFullscreenChange());
                 } else {
                     console.log("Space Battle: Menu elements not found");
-                }
-            },
-            
-            handleFullscreenChange: function() {
-                const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
-                                     document.mozFullScreenElement || document.msFullscreenElement);
-                console.log("Fullscreen changed, isFullscreen:", isFullscreen);
-                
-                if (isFullscreen && this.overlay) {
-                    // Get the fullscreen element
-                    const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || 
-                                            document.mozFullScreenElement || document.msFullscreenElement;
-                    
-                    if (fullscreenElement) {
-                        // Move menu overlay to fullscreen element
-                        fullscreenElement.appendChild(this.overlay);
-                        console.log("Menu moved to fullscreen element");
-                    }
-                    
-                    // Force menu to be visible in fullscreen
-                    this.overlay.style.display = 'flex';
-                    this.overlay.style.visibility = 'visible';
-                    this.overlay.style.opacity = '1';
-                    this.overlay.style.zIndex = '999999';
-                    this.overlay.style.pointerEvents = 'auto';
-                    this.overlay.style.position = 'fixed';
-                    this.overlay.style.top = '0';
-                    this.overlay.style.left = '0';
-                    this.overlay.style.width = '100vw';
-                    this.overlay.style.height = '100vh';
-                    
-                    // Force all buttons to be clickable
-                    setTimeout(() => {
-                        const menuButtons = document.querySelectorAll('.menu-btn');
-                        menuButtons.forEach(btn => {
-                            btn.style.zIndex = '1000001';
-                            btn.style.position = 'relative';
-                            btn.style.pointerEvents = 'auto';
-                            btn.style.cursor = 'pointer';
-                            console.log("Menu button made clickable in fullscreen");
-                        });
-                    }, 100);
-                    
-                    console.log("Menu forced to show in fullscreen");
-                } else {
-                    // Return menu to body when exiting fullscreen
-                    if (this.overlay && this.overlay.parentNode !== document.body) {
-                        document.body.appendChild(this.overlay);
-                        console.log("Menu returned to body");
-                    }
                 }
             },
             
             showMainMenu: function() {
                 console.log("Space Battle: Showing main menu");
                 this.currentScreen = 'main';
-                
-                // Force show menu overlay
-                if (this.overlay) {
-                    this.overlay.style.display = 'flex';
-                    this.overlay.style.visibility = 'visible';
-                    this.overlay.style.opacity = '1';
-                    this.overlay.style.zIndex = '999999';
-                    this.overlay.style.pointerEvents = 'auto';
-                    console.log("Menu overlay forced to show");
-                }
-                
                 if (this.container) {
                     this.container.innerHTML = `
                         <h1 class="game-title">SPACE BATTLE</h1>
@@ -706,39 +605,6 @@
                         </div>
                     `;
                 }
-                
-                // Force all menu elements to be clickable
-                setTimeout(() => {
-                    const menuButtons = document.querySelectorAll('.menu-btn');
-                    menuButtons.forEach(btn => {
-                        btn.style.zIndex = '1000001';
-                        btn.style.position = 'relative';
-                        btn.style.pointerEvents = 'auto';
-                        btn.style.cursor = 'pointer';
-                        
-                        // Add direct event listeners to ensure clicks work
-                        btn.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            console.log("Menu button clicked:", this.textContent);
-                            
-                            // Handle button clicks directly
-                            if (this.classList.contains('start')) {
-                                MenuUI.startGame();
-                            } else if (this.classList.contains('options')) {
-                                MenuUI.showOptions();
-                            } else if (this.classList.contains('stats')) {
-                                MenuUI.showStats();
-                            } else if (this.classList.contains('help')) {
-                                MenuUI.showHelp();
-                            } else if (this.classList.contains('exit')) {
-                                MenuUI.exitGame();
-                            }
-                        });
-                        
-                        console.log("Menu button z-index set:", btn.style.zIndex);
-                    });
-                }, 100);
             },
             
             showOptions: function() {
@@ -972,8 +838,6 @@
 
                 this.width = rect.width;
                 this.height = rect.height;
-                
-                console.log(`Canvas initialized: width=${this.width}, height=${this.height}, rect=${rect.width}x${rect.height}`);
             }
 
             initializeAudio() {
@@ -1108,9 +972,8 @@
                 this.gameSpeed = this.calculateSpeedMultiplier(this.level);
                 console.log(`Level ${this.level}: Speed multiplier ${this.gameSpeed}x`);
 
-                // Create player (in center of screen)
-                this.player = new Player(this.width / 2 - 25, this.height / 2);
-                console.log(`Player starting at: x=${this.width / 2 - 25}, y=${this.height / 2}, width=${this.width}, height=${this.height}`);
+                // Create player (on left side)
+                this.player = new Player(80, this.height / 2);
 
                 // Update UI
                 this.updateUI();
@@ -1319,33 +1182,20 @@
                 this.gameRunning = false;
                 this.playSFX('levelUp');
                 
-                // Remove any existing popup first
-                const existingPopup = document.getElementById('levelCompletePopup');
-                if (existingPopup) {
-                    existingPopup.remove();
-                }
-                
-                // Check if we're in fullscreen mode
-                const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
-                                     document.mozFullScreenElement || document.msFullscreenElement);
-                console.log("Is fullscreen:", isFullscreen);
-                
                 // Create congratulations popup
                 const popup = document.createElement('div');
                 popup.id = 'levelCompletePopup';
                 popup.style.cssText = `
-                    position: fixed !important;
-                    top: 0 !important;
-                    left: 0 !important;
-                    width: 100vw !important;
-                    height: 100vh !important;
-                    background: rgba(0, 0, 0, 0.9) !important;
-                    display: flex !important;
-                    justify-content: center !important;
-                    align-items: center !important;
-                    z-index: 99999 !important;
-                    margin: 0 !important;
-                    padding: 0 !important;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.8);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
                 `;
                 
                 popup.innerHTML = `
@@ -1378,99 +1228,23 @@
                             background: linear-gradient(45deg, #00ff88, #00ccff);
                             border: none;
                             color: #000;
-                            padding: 6px 12px;
-                            font-size: 0.7rem;
+                            padding: 8px 16px;
+                            font-size: 0.8rem;
                             font-weight: bold;
-                            border-radius: 5px;
+                            border-radius: 6px;
                             cursor: pointer;
-                            margin: 0.2rem;
+                            margin: 0.3rem;
                             transition: all 0.3s ease;
                             display: block;
                             width: 100%;
-                            margin-bottom: 0.4rem;
                         " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
                             Start Level ${this.level + 1}
-                        </button>
-                        <button onclick="game.returnToMenu()" style="
-                            background: linear-gradient(45deg, #ff6b35, #ff4757);
-                            border: none;
-                            color: #fff;
-                            padding: 6px 12px;
-                            font-size: 0.7rem;
-                            font-weight: bold;
-                            border-radius: 5px;
-                            cursor: pointer;
-                            margin: 0.2rem;
-                            transition: all 0.3s ease;
-                            display: block;
-                            width: 100%;
-                        " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                            Return to Menu
                         </button>
                     </div>
                 `;
                 
-                // Attach popup to correct element based on fullscreen mode
-                if (isFullscreen) {
-                    // In fullscreen mode, attach to the fullscreen element
-                    const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || 
-                                            document.mozFullScreenElement || document.msFullscreenElement;
-                    if (fullscreenElement) {
-                        fullscreenElement.appendChild(popup);
-                        console.log("Popup attached to fullscreen element");
-                    } else {
-                        document.body.appendChild(popup);
-                        console.log("Popup attached to body (fullscreen element not found)");
-                    }
-                } else {
-                    // Normal mode, attach to body
-                    document.body.appendChild(popup);
-                    console.log("Popup attached to body (normal mode)");
-                }
-                
+                document.body.appendChild(popup);
                 console.log(`Space Battle: Level ${this.level} completed! Showing congratulations popup.`);
-                
-                // Force show popup with timeout
-                setTimeout(() => {
-                    popup.style.display = 'flex';
-                    popup.style.visibility = 'visible';
-                    popup.style.opacity = '1';
-                    console.log("Popup should now be visible");
-                    
-                    // If still not visible in fullscreen, try exiting fullscreen temporarily
-                    if (isFullscreen && popup.offsetParent === null) {
-                        console.log("Popup not visible in fullscreen, trying to exit fullscreen temporarily");
-                        this.exitFullscreenTemporarily();
-                    }
-                }, 100);
-            }
-
-            exitFullscreenTemporarily() {
-                // Exit fullscreen temporarily to show modal
-                if (document.exitFullscreen) {
-                    document.exitFullscreen().then(() => {
-                        console.log("Exited fullscreen for modal display");
-                        // Re-enter fullscreen after a delay
-                        setTimeout(() => {
-                            this.enterFullscreen();
-                        }, 2000);
-                    }).catch(err => console.log("Exit fullscreen failed:", err));
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen().then(() => {
-                        console.log("Exited fullscreen for modal display");
-                        setTimeout(() => {
-                            this.enterFullscreen();
-                        }, 2000);
-                    }).catch(err => console.log("Exit fullscreen failed:", err));
-                }
-            }
-
-            enterFullscreen() {
-                // Re-enter fullscreen
-                const gameSection = document.getElementById('gameSection');
-                if (gameSection && gameSection.requestFullscreen) {
-                    gameSection.requestFullscreen().catch(err => console.log("Re-enter fullscreen failed:", err));
-                }
             }
 
             startNextLevel() {
@@ -1507,13 +1281,10 @@
                     gameSection.style.display = 'none';
                 }
                 
-                // Show menu overlay with proper z-index
+                // Show menu overlay
                 const menuOverlay = document.getElementById('menuOverlay');
                 if (menuOverlay) {
                     menuOverlay.style.display = 'flex';
-                    menuOverlay.style.zIndex = '10000';
-                    menuOverlay.style.pointerEvents = 'auto';
-                    console.log("Menu overlay shown with z-index 10000");
                 }
                 
                 // Show main menu
@@ -1667,7 +1438,7 @@
             }
 
             update(mouseX, mouseY, mousePressed, deltaTime) {
-                // Move towards mouse but constrain to center area
+                // Move towards mouse (horizontal movement)
                 const dx = mouseX - this.x;
                 const dy = mouseY - this.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
@@ -1677,9 +1448,9 @@
                     this.y += (dy / distance) * this.speed;
                 }
 
-                // Keep player in center area (left to right) and middle area (top to bottom)
-                this.x = Math.max(100, Math.min(this.x, 400)); // Center area of screen
-                this.y = Math.max(150, Math.min(this.y, 350)); // Middle area of screen (not top or bottom)
+                // Keep player on screen (horizontal bounds)
+                this.x = Math.max(50, Math.min(this.x, 200)); // Left side of screen
+                this.y = Math.max(30, Math.min(this.y, 470)); // Vertical movement allowed
 
                 // Shooting
                 this.shootCooldown -= deltaTime;
