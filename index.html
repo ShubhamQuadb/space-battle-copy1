@@ -242,11 +242,14 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             background: #000;
             display: none;
             z-index: 5;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
         }
 
         #gameSection.active {
@@ -260,10 +263,12 @@
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
             max-width: 100%;
             max-height: 100%;
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             z-index: 1;
+            margin: 0;
+            padding: 0;
         }
 
         /* Game UI */
@@ -353,8 +358,10 @@
             color: #000;
             font-size: 1.2rem;
             cursor: pointer;
-            z-index: 200;
+            z-index: 1000;
             transition: all 0.3s ease;
+            margin: 0;
+            padding: 0;
         }
 
         .fullscreen-btn {
@@ -2260,6 +2267,18 @@
                     gameSection.style.position = 'fixed';
                     gameSection.style.top = '0';
                     gameSection.style.left = '0';
+                    
+                    // Ensure canvas covers entire screen
+                    const canvas = document.getElementById('gameCanvas');
+                    if (canvas) {
+                        canvas.style.width = '100vw';
+                        canvas.style.height = '100vh';
+                        canvas.style.position = 'fixed';
+                        canvas.style.top = '0';
+                        canvas.style.left = '0';
+                        canvas.style.margin = '0';
+                        canvas.style.padding = '0';
+                    }
                     
                     // Ensure buttons stay visible in fullscreen
                     const buttons = gameSection.querySelectorAll('.control-btn');
