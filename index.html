@@ -1530,7 +1530,7 @@
             }
 
             update(mouseX, mouseY, mousePressed, deltaTime) {
-                // Move towards mouse (horizontal movement)
+                // Move towards mouse but constrain to center area
                 const dx = mouseX - this.x;
                 const dy = mouseY - this.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
@@ -1540,9 +1540,9 @@
                     this.y += (dy / distance) * this.speed;
                 }
 
-                // Keep player on screen (center area)
+                // Keep player in center area (left to right) and middle area (top to bottom)
                 this.x = Math.max(100, Math.min(this.x, 400)); // Center area of screen
-                this.y = Math.max(30, Math.min(this.y, 470)); // Vertical movement allowed
+                this.y = Math.max(150, Math.min(this.y, 350)); // Middle area of screen (not top or bottom)
 
                 // Shooting
                 this.shootCooldown -= deltaTime;
