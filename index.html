@@ -39,17 +39,46 @@
             user-select: none;
         }
 
-        /* Fullscreen support for mobile */
+        /* Enhanced fullscreen support for mobile - fixes gaps */
         html:fullscreen, html:-webkit-full-screen, html:-moz-full-screen, html:-ms-fullscreen {
-            width: 100% !important;
-            height: 100% !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
         }
 
         body:fullscreen, body:-webkit-full-screen, body:-moz-full-screen, body:-ms-fullscreen {
-            width: 100% !important;
-            height: 100% !important;
+            width: 100vw !important;
+            height: 100vh !important;
             margin: 0 !important;
             padding: 0 !important;
+            overflow: hidden !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+        }
+
+        /* Mobile-specific fullscreen fixes */
+        @media screen and (max-width: 768px) {
+            html:fullscreen, html:-webkit-full-screen {
+                width: 100vw !important;
+                height: 100vh !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden !important;
+            }
+            
+            body:fullscreen, body:-webkit-full-screen {
+                width: 100vw !important;
+                height: 100vh !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden !important;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+            }
         }
         
         /* Force everything to landscape - hide all content in portrait */
@@ -2109,24 +2138,42 @@
         }
 
         function hideMobileUI() {
-            // Hide mobile browser UI elements
+            // Enhanced mobile UI hiding - fixes gaps
+            document.documentElement.style.width = '100vw';
+            document.documentElement.style.height = '100vh';
+            document.documentElement.style.margin = '0';
+            document.documentElement.style.padding = '0';
+            document.documentElement.style.overflow = 'hidden';
+            
             document.body.style.position = 'fixed';
             document.body.style.top = '0';
             document.body.style.left = '0';
             document.body.style.width = '100vw';
             document.body.style.height = '100vh';
+            document.body.style.margin = '0';
+            document.body.style.padding = '0';
             document.body.style.overflow = 'hidden';
             
-            // Force viewport to full screen
+            // Force viewport to full screen with proper mobile settings
             const viewport = document.querySelector('meta[name="viewport"]');
             if (viewport) {
-                viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+                viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, minimal-ui');
             }
             
-            // Hide address bar on mobile
+            // Hide address bar and status bar on mobile
             setTimeout(() => {
                 window.scrollTo(0, 1);
+                // Additional mobile optimizations
+                document.body.style.webkitTransform = 'translate3d(0,0,0)';
+                document.body.style.transform = 'translate3d(0,0,0)';
             }, 100);
+            
+            // Force fullscreen on all elements
+            const allElements = document.querySelectorAll('*');
+            allElements.forEach(el => {
+                el.style.margin = '0';
+                el.style.padding = '0';
+            });
         }
 
         function closeGame() {
@@ -2149,22 +2196,46 @@
                                  document.mozFullScreenElement || document.msFullscreenElement);
             
             if (isFullscreen) {
-                // Entered fullscreen - ensure proper sizing
+                // Entered fullscreen - ensure proper sizing for mobile
+                document.documentElement.style.width = '100vw';
+                document.documentElement.style.height = '100vh';
+                document.documentElement.style.margin = '0';
+                document.documentElement.style.padding = '0';
+                document.documentElement.style.overflow = 'hidden';
+                
                 document.body.style.width = '100vw';
                 document.body.style.height = '100vh';
                 document.body.style.margin = '0';
                 document.body.style.padding = '0';
+                document.body.style.overflow = 'hidden';
+                document.body.style.position = 'fixed';
+                document.body.style.top = '0';
+                document.body.style.left = '0';
+                
+                // Mobile-specific optimizations
+                if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                    // Force mobile fullscreen
+                    setTimeout(() => {
+                        document.body.style.webkitTransform = 'translate3d(0,0,0)';
+                        document.body.style.transform = 'translate3d(0,0,0)';
+                        window.scrollTo(0, 1);
+                    }, 50);
+                }
                 
                 // Resize canvas if game is running
                 if (window.game && window.game.initializeCanvas) {
                     setTimeout(() => {
                         window.game.initializeCanvas();
-                    }, 100);
+                    }, 200);
                 }
             } else {
                 // Exited fullscreen - restore normal sizing
+                document.documentElement.style.width = '100%';
+                document.documentElement.style.height = '100%';
+                document.documentElement.style.overflow = 'hidden';
                 document.body.style.width = '100%';
                 document.body.style.height = '100%';
+                document.body.style.position = 'fixed';
             }
         }
 
