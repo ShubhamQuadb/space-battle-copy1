@@ -1185,17 +1185,23 @@
                 // Create congratulations popup
                 const popup = document.createElement('div');
                 popup.id = 'levelCompletePopup';
+                // Check if in fullscreen mode
+                const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
+                                     document.mozFullScreenElement || document.msFullscreenElement);
+                const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || 
+                                         document.mozFullScreenElement || document.msFullscreenElement;
+                
                 popup.style.cssText = `
                     position: fixed;
                     top: 0;
                     left: 0;
-                    width: 100%;
-                    height: 100%;
+                    width: 100vw;
+                    height: 100vh;
                     background: rgba(0, 0, 0, 0.8);
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    z-index: 1000;
+                    z-index: 999999 !important;
                 `;
                 
                 popup.innerHTML = `
@@ -1243,7 +1249,23 @@
                     </div>
                 `;
                 
-                document.body.appendChild(popup);
+                // Attach popup to fullscreen element if in fullscreen, otherwise to body
+                if (isFullscreen && fullscreenElement) {
+                    fullscreenElement.appendChild(popup);
+                    console.log("Popup attached to fullscreen element");
+                } else {
+                    document.body.appendChild(popup);
+                    console.log("Popup attached to body");
+                }
+                
+                // Force show popup with timeout
+                setTimeout(() => {
+                    popup.style.display = 'flex';
+                    popup.style.visibility = 'visible';
+                    popup.style.opacity = '1';
+                    console.log("Popup forced to show");
+                }, 100);
+                
                 console.log(`Space Battle: Level ${this.level} completed! Showing congratulations popup.`);
             }
 
@@ -1450,7 +1472,7 @@
 
                 // Keep player on screen (horizontal bounds)
                 this.x = Math.max(50, Math.min(this.x, 200)); // Left side of screen
-                this.y = Math.max(30, Math.min(this.y, 470)); // Vertical movement allowed
+                this.y = Math.max(150, Math.min(this.y, 350)); // Keep in center area (not top or bottom)
 
                 // Shooting
                 this.shootCooldown -= deltaTime;
