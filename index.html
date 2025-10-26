@@ -997,11 +997,10 @@
             playMusic() {
                 console.log("playMusic called - muteMusic:", this.muteMusic, "audio exists:", !!this.audio.music);
                 if (!this.muteMusic && this.audio.music) {
-                    // Reset to beginning and play
+                    // Play music (already loaded in stopMusic)
                     console.log("Attempting to play music");
                     const audio = this.audio.music;
                     audio.currentTime = 0;
-                    audio.load(); // Reload the audio element
                     const playPromise = audio.play();
                     if (playPromise !== undefined) {
                         playPromise
@@ -1021,6 +1020,7 @@
                 if (this.audio.music) {
                     this.audio.music.pause();
                     this.audio.music.currentTime = 0;
+                    this.audio.music.load(); // Reload audio so it's ready for next play
                 }
             }
 
