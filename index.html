@@ -1764,9 +1764,12 @@
                     return particle.life > 0;
                 });
 
-                // Add new steam particles (from back of rocket - left side)
+                // Add new steam particles (from back of rocket - both engine nozzles)
                 if (Math.random() < 0.3) {
-                    this.steamParticles.push(new SteamParticle(this.x, this.y + this.height/2));
+                    // Randomly choose which engine nozzle to emit from
+                    const engineIndex = Math.random() < 0.5 ? 0 : 1;
+                    const engineY = this.y + (engineIndex === 0 ? 12 : 18); // Top engine or bottom engine
+                    this.steamParticles.push(new SteamParticle(this.x, engineY));
                 }
             }
 
