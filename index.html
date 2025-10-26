@@ -1764,9 +1764,9 @@
                     return particle.life > 0;
                 });
 
-                // Add new steam particles (from back of rocket)
+                // Add new steam particles (from back of rocket - left side)
                 if (Math.random() < 0.3) {
-                    this.steamParticles.push(new SteamParticle(this.x + this.width, this.y + this.height/2));
+                    this.steamParticles.push(new SteamParticle(this.x, this.y + this.height/2));
                 }
             }
 
