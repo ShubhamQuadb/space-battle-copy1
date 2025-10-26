@@ -2351,11 +2351,21 @@
                 window.game.gameRunning = false;
             }
             
-            // Get fullscreen element
+            // Exit fullscreen first to show menu properly
             const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
                                  document.mozFullScreenElement || document.msFullscreenElement);
-            const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || 
-                                     document.mozFullScreenElement || document.msFullscreenElement;
+            
+            if (isFullscreen) {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().catch(err => {});
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen().catch(err => {});
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen().catch(err => {});
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen().catch(err => {});
+                }
+            }
             
             // Hide game section
             const gameSection = document.getElementById('gameSection');
@@ -2374,14 +2384,16 @@
                 menuOverlay.style.width = '100vw';
                 menuOverlay.style.height = '100vh';
                 
-                // Attach to fullscreen element if in fullscreen
-                if (isFullscreen && fullscreenElement) {
-                    fullscreenElement.appendChild(menuOverlay);
+                // Return menu to body if it was in fullscreen element
+                if (menuOverlay.parentNode !== document.body) {
+                    document.body.appendChild(menuOverlay);
                 }
             }
             
-            // Show main menu
-            MenuUI.showMainMenu();
+            // Show main menu with a small delay to ensure fullscreen exits
+            setTimeout(() => {
+                MenuUI.showMainMenu();
+            }, 100);
         }
 
         function closeGame() {
