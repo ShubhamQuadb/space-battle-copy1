@@ -992,7 +992,10 @@
 
             playMusic() {
                 if (!this.muteMusic && this.audio.music) {
-                    this.audio.music.play().catch(e => console.log('Music play failed:', e));
+                    // Check if already playing to avoid overlapping
+                    if (this.audio.music.paused) {
+                        this.audio.music.play().catch(e => console.log('Music play failed:', e));
+                    }
                 }
             }
 
@@ -2339,6 +2342,20 @@
             // Stop existing game if running
             if (game && game.gameRunning) {
                 game.gameRunning = false;
+            }
+            
+            // Stop all sounds from previous game instance
+            if (game) {
+                game.stopMusic();
+                // Stop all SFX by resetting them
+                if (game.audio && game.audio.sfx) {
+                    Object.keys(game.audio.sfx).forEach(key => {
+                        if (game.audio.sfx[key]) {
+                            game.audio.sfx[key].pause();
+                            game.audio.sfx[key].currentTime = 0;
+                        }
+                    });
+                }
             }
             
             // Create new game instance
