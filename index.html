@@ -626,6 +626,35 @@
                     }, 100);
                 }
             },
+
+            showInGameMenu: function() {
+                console.log("Space Battle: Showing in-game menu");
+                this.currentScreen = 'ingame';
+                if (this.container) {
+                    this.container.innerHTML = `
+                        <h1 class="game-title">SPACE BATTLE</h1>
+                        <p class="menu-subtitle">MODERN SPACE SHOOTER</p>
+                        <div class="menu-buttons">
+                            <button type="button" class="menu-btn start" onclick="event.preventDefault(); MenuUI.restartGame(); return false;">Restart Game</button>
+                            <button type="button" class="menu-btn options" onclick="event.preventDefault(); MenuUI.showOptions(); return false;">Options</button>
+                            <button type="button" class="menu-btn stats" onclick="event.preventDefault(); MenuUI.showStats(); return false;">Statistics</button>
+                            <button type="button" class="menu-btn help" onclick="event.preventDefault(); MenuUI.showHelp(); return false;">Help</button>
+                            <button type="button" class="menu-btn exit" onclick="event.preventDefault(); MenuUI.exitGame(); return false;">Exit</button>
+                        </div>
+                    `;
+                    
+                    // Force buttons to be clickable in fullscreen
+                    setTimeout(() => {
+                        const menuButtons = this.container.querySelectorAll('.menu-btn');
+                        menuButtons.forEach(btn => {
+                            btn.style.zIndex = '1000001';
+                            btn.style.position = 'relative';
+                            btn.style.pointerEvents = 'auto';
+                            btn.style.cursor = 'pointer';
+                        });
+                    }, 100);
+                }
+            },
             
             showOptions: function() {
                 console.log("Space Battle: Showing options");
@@ -2413,10 +2442,10 @@
                 console.log("Menu overlay not found!");
             }
             
-            // Show main menu with a small delay to ensure fullscreen exits
+            // Show in-game menu with restart button
             setTimeout(() => {
-                console.log("Calling MenuUI.showMainMenu()");
-                MenuUI.showMainMenu();
+                console.log("Calling MenuUI.showInGameMenu()");
+                MenuUI.showInGameMenu();
             }, 100);
         }
 
