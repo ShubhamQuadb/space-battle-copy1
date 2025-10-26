@@ -669,6 +669,25 @@
                 if (gameSection) {
                     gameSection.style.display = 'block';
                     
+                    // Re-enter fullscreen if it was exited
+                    setTimeout(() => {
+                        const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
+                                             document.mozFullScreenElement || document.msFullscreenElement);
+                        
+                        if (!isFullscreen) {
+                            // Re-enter fullscreen
+                            if (gameSection.requestFullscreen) {
+                                gameSection.requestFullscreen().catch(err => {});
+                            } else if (gameSection.webkitRequestFullscreen) {
+                                gameSection.webkitRequestFullscreen().catch(err => {});
+                            } else if (gameSection.mozRequestFullScreen) {
+                                gameSection.mozRequestFullScreen().catch(err => {});
+                            } else if (gameSection.msRequestFullscreen) {
+                                gameSection.msRequestFullscreen().catch(err => {});
+                            }
+                        }
+                    }, 100);
+                    
                     // Resume game if it was running
                     if (window.game) {
                         window.game.gameRunning = true;
