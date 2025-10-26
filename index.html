@@ -1585,16 +1585,19 @@
             }
 
             update(mouseX, mouseY, mousePressed, deltaTime) {
+                // Keep player fixed on left side, only vertical movement allowed
+                this.x = 50; // Fixed position on left side
+                
                 // Move towards mouse (only vertical movement, no horizontal)
                 const dy = mouseY - this.y;
                 const distance = Math.abs(dy);
 
-                if (distance > 5) {
+                // Only move if mouseY is valid (not 0 or undefined)
+                if (distance > 5 && mouseY > 0 && mouseY < this.canvasHeight) {
                     this.y += (dy / distance) * this.speed;
                 }
 
-                // Keep player fixed on left side, only vertical movement allowed
-                this.x = 50; // Fixed position on left side
+                // Constrain vertical movement
                 this.y = Math.max(50, Math.min(this.y, this.canvasHeight - 50)); // Allow full vertical movement
 
                 // Shooting
