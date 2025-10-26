@@ -641,7 +641,7 @@
                             <button type="button" class="menu-btn help" onclick="event.preventDefault(); MenuUI.showHelp(); return false;">Help</button>
                             <button type="button" class="menu-btn exit" onclick="event.preventDefault(); MenuUI.exitGame(); return false;">Exit</button>
                         </div>
-                        <button onclick="MenuUI.hideInGameMenu()" style="position: fixed; bottom: 20px; left: 20px; background: rgba(255, 100, 100, 0.9); border: none; color: #fff; padding: 12px; border-radius: 50%; cursor: pointer; font-size: 1.5rem; width: 50px; height: 50px; z-index: 1000002;">✕</button>
+                        <button onclick="MenuUI.hideInGameMenu()" style="position: fixed; bottom: 20px; left: 20px; background: rgba(255, 100, 100, 0.9); border: none; color: #fff; border-radius: 50%; cursor: pointer; font-size: 1.5rem; width: 50px; height: 50px; z-index: 1000002; display: flex; align-items: center; justify-content: center; padding: 0;">✕</button>
                     `;
                     
                     // Force buttons to be clickable in fullscreen
@@ -811,6 +811,25 @@
                 if (gameSection) {
                     gameSection.classList.add('active');
                     gameSection.style.display = 'block';
+                    
+                    // Re-enter fullscreen if it was exited
+                    setTimeout(() => {
+                        const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
+                                             document.mozFullScreenElement || document.msFullscreenElement);
+                        
+                        if (!isFullscreen) {
+                            // Re-enter fullscreen
+                            if (gameSection.requestFullscreen) {
+                                gameSection.requestFullscreen().catch(err => {});
+                            } else if (gameSection.webkitRequestFullscreen) {
+                                gameSection.webkitRequestFullscreen().catch(err => {});
+                            } else if (gameSection.mozRequestFullScreen) {
+                                gameSection.mozRequestFullScreen().catch(err => {});
+                            } else if (gameSection.msRequestFullscreen) {
+                                gameSection.msRequestFullscreen().catch(err => {});
+                            }
+                        }
+                    }, 100);
                 }
                 startNewGame();
             },
