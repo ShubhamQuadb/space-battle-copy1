@@ -367,6 +367,7 @@
         .menu-btn-btn {
             left: 20px;
             background: rgba(255, 170, 0, 0.8);
+            z-index: 1001 !important;
         }
 
         .fullscreen-btn {
@@ -2339,6 +2340,12 @@
                 window.game.gameRunning = false;
             }
             
+            // Get fullscreen element
+            const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
+                                 document.mozFullScreenElement || document.msFullscreenElement);
+            const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || 
+                                     document.mozFullScreenElement || document.msFullscreenElement;
+            
             // Hide game section
             const gameSection = document.getElementById('gameSection');
             if (gameSection) {
@@ -2349,6 +2356,17 @@
             const menuOverlay = document.getElementById('menuOverlay');
             if (menuOverlay) {
                 menuOverlay.style.display = 'flex';
+                menuOverlay.style.zIndex = '999999';
+                menuOverlay.style.position = 'fixed';
+                menuOverlay.style.top = '0';
+                menuOverlay.style.left = '0';
+                menuOverlay.style.width = '100vw';
+                menuOverlay.style.height = '100vh';
+                
+                // Attach to fullscreen element if in fullscreen
+                if (isFullscreen && fullscreenElement) {
+                    fullscreenElement.appendChild(menuOverlay);
+                }
             }
             
             // Show main menu
@@ -2411,6 +2429,17 @@
                         btn.style.position = 'fixed';
                         btn.style.zIndex = '1000';
                     });
+                    
+                    // Ensure menu overlay is accessible in fullscreen
+                    const menuOverlay = document.getElementById('menuOverlay');
+                    if (menuOverlay) {
+                        menuOverlay.style.zIndex = '999999';
+                        menuOverlay.style.position = 'fixed';
+                        menuOverlay.style.top = '0';
+                        menuOverlay.style.left = '0';
+                        menuOverlay.style.width = '100vw';
+                        menuOverlay.style.height = '100vh';
+                    }
                 } else {
                     // Document fullscreen fallback
                     document.documentElement.style.width = '100vw';
