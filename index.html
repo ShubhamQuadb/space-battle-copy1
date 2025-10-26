@@ -2346,6 +2346,8 @@
         }
 
         function showGameMenu() {
+            console.log("showGameMenu called!");
+            
             // Stop the game
             if (window.game) {
                 window.game.gameRunning = false;
@@ -2355,15 +2357,17 @@
             const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
                                  document.mozFullScreenElement || document.msFullscreenElement);
             
+            console.log("Is fullscreen:", isFullscreen);
+            
             if (isFullscreen) {
                 if (document.exitFullscreen) {
-                    document.exitFullscreen().catch(err => {});
+                    document.exitFullscreen().catch(err => console.log("Exit fullscreen error:", err));
                 } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen().catch(err => {});
+                    document.webkitExitFullscreen().catch(err => console.log("Exit fullscreen error:", err));
                 } else if (document.mozCancelFullScreen) {
-                    document.mozCancelFullScreen().catch(err => {});
+                    document.mozCancelFullScreen().catch(err => console.log("Exit fullscreen error:", err));
                 } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen().catch(err => {});
+                    document.msExitFullscreen().catch(err => console.log("Exit fullscreen error:", err));
                 }
             }
             
@@ -2371,6 +2375,7 @@
             const gameSection = document.getElementById('gameSection');
             if (gameSection) {
                 gameSection.style.display = 'none';
+                console.log("Game section hidden");
             }
             
             // Show menu overlay
@@ -2383,15 +2388,23 @@
                 menuOverlay.style.left = '0';
                 menuOverlay.style.width = '100vw';
                 menuOverlay.style.height = '100vh';
+                menuOverlay.style.visibility = 'visible';
+                menuOverlay.style.opacity = '1';
+                
+                console.log("Menu overlay shown");
                 
                 // Return menu to body if it was in fullscreen element
                 if (menuOverlay.parentNode !== document.body) {
                     document.body.appendChild(menuOverlay);
+                    console.log("Menu returned to body");
                 }
+            } else {
+                console.log("Menu overlay not found!");
             }
             
             // Show main menu with a small delay to ensure fullscreen exits
             setTimeout(() => {
+                console.log("Calling MenuUI.showMainMenu()");
                 MenuUI.showMainMenu();
             }, 100);
         }
