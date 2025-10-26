@@ -1039,15 +1039,8 @@
                     const escaped = enemy.x < -50; // Escaped off left side
 
                     if (escaped) {
-                        // Count escaped enemies as kills for statistics
-                        this.enemiesKilled++;
-                        this.score += Math.floor(enemy.points * 0.5); // 50% points for escaped enemies
-
-                        // Save to statistics
-                        const totalKilled = parseInt(localStorage.getItem('totalEnemiesKilled') || '0');
-                        localStorage.setItem('totalEnemiesKilled', totalKilled + 1);
-
-                        console.log(`Enemy escaped: ${enemy.type} - counted as kill`);
+                        // Escaped enemies don't count for level progression or kills
+                        console.log(`Enemy escaped: ${enemy.type} - not counted`);
                     }
 
                     return !escaped;
