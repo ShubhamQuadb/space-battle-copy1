@@ -1000,16 +1000,23 @@
                     // Play music (already loaded in stopMusic)
                     console.log("Attempting to play music");
                     const audio = this.audio.music;
-                    audio.currentTime = 0;
-                    const playPromise = audio.play();
-                    if (playPromise !== undefined) {
-                        playPromise
-                            .then(() => {
-                                console.log("Music started successfully");
-                            })
-                            .catch(error => {
-                                console.log('Music play failed:', error);
-                            });
+                    try {
+                        audio.currentTime = 0;
+                        const playPromise = audio.play();
+                        if (playPromise !== undefined) {
+                            playPromise
+                                .then(() => {
+                                    console.log("Music started successfully");
+                                })
+                                .catch(error => {
+                                    console.log('Music play failed:', error);
+                                    // Try to reload and play again
+                                    audio.load();
+                                    audio.play().catch(e => console.log('Retry play failed:', e));
+                                });
+                        }
+                    } catch (error) {
+                        console.log('Error trying to play music:', error);
                     }
                 } else {
                     console.log("Music muted or no audio object");
@@ -1020,7 +1027,7 @@
                 if (this.audio.music) {
                     this.audio.music.pause();
                     this.audio.music.currentTime = 0;
-                    this.audio.music.load(); // Reload audio so it's ready for next play
+                    // Don't call load() as it might cause issues
                 }
             }
 
