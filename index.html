@@ -999,8 +999,18 @@
                 if (!this.muteMusic && this.audio.music) {
                     // Reset to beginning and play
                     console.log("Attempting to play music");
-                    this.audio.music.currentTime = 0;
-                    this.audio.music.play().catch(e => console.log('Music play failed:', e));
+                    const audio = this.audio.music;
+                    audio.currentTime = 0;
+                    const playPromise = audio.play();
+                    if (playPromise !== undefined) {
+                        playPromise
+                            .then(() => {
+                                console.log("Music started successfully");
+                            })
+                            .catch(error => {
+                                console.log('Music play failed:', error);
+                            });
+                    }
                 } else {
                     console.log("Music muted or no audio object");
                 }
