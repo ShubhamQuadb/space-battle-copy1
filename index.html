@@ -364,8 +364,13 @@
             padding: 0;
         }
 
-        .fullscreen-btn {
+        .menu-btn-btn {
             left: 20px;
+            background: rgba(255, 170, 0, 0.8);
+        }
+
+        .fullscreen-btn {
+            left: 80px;
         }
 
         .close-btn {
@@ -493,6 +498,9 @@
         </div>
 
         <!-- Control Buttons -->
+        <button id="menuBtn" class="control-btn menu-btn-btn" onclick="showGameMenu()" title="Game Menu">
+            <span class="btn-icon">☰</span>
+        </button>
         <button id="fullscreenBtn" class="control-btn fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
             <span class="btn-icon">⛶</span>
         </button>
@@ -2330,6 +2338,28 @@
             document.body.style.margin = '0';
             document.body.style.padding = '0';
             document.body.style.overflow = 'hidden';
+        }
+
+        function showGameMenu() {
+            // Stop the game
+            if (window.game) {
+                window.game.gameRunning = false;
+            }
+            
+            // Hide game section
+            const gameSection = document.getElementById('gameSection');
+            if (gameSection) {
+                gameSection.style.display = 'none';
+            }
+            
+            // Show menu overlay
+            const menuOverlay = document.getElementById('menuOverlay');
+            if (menuOverlay) {
+                menuOverlay.style.display = 'flex';
+            }
+            
+            // Show main menu
+            MenuUI.showMainMenu();
         }
 
         function closeGame() {
