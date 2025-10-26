@@ -2336,6 +2336,12 @@
         let game = null;
 
         function startNewGame() {
+            // Stop existing game if running
+            if (game && game.gameRunning) {
+                game.gameRunning = false;
+            }
+            
+            // Create new game instance
             game = new SpaceShooterGame();
             window.game = game; // Make game globally accessible
             game.start();
