@@ -1878,8 +1878,9 @@
             constructor(x, y) {
                 this.x = x;
                 this.y = y;
-                this.vx = (Math.random() - 0.5) * 2;
-                this.vy = Math.random() * 2 + 1;
+                // Move left (backward) since rocket moves right (forward)
+                this.vx = -(Math.random() * 2 + 1); // Negative velocity to move left
+                this.vy = (Math.random() - 0.5) * 1; // Small vertical variation
                 this.life = 30;
                 this.maxLife = 30;
                 this.size = Math.random() * 3 + 1;
