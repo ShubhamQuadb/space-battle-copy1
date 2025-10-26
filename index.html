@@ -842,9 +842,13 @@
                     window.game.muteMusic = !currentState;
                     if (currentState) {
                         // Music was ON, now turning OFF
+                        console.log("Turning music OFF");
                         window.game.stopMusic();
                     } else {
                         // Music was OFF, now turning ON
+                        console.log("Turning music ON, muteMusic:", window.game.muteMusic);
+                        console.log("Audio object:", window.game.audio.music);
+                        console.log("Paused state:", window.game.audio.music?.paused);
                         window.game.playMusic();
                     }
                 }
@@ -991,10 +995,15 @@
             }
 
             playMusic() {
+                console.log("playMusic called - muteMusic:", this.muteMusic, "audio exists:", !!this.audio.music);
                 if (!this.muteMusic && this.audio.music) {
                     // Check if already playing to avoid overlapping
-                    if (this.audio.music.paused) {
+                    console.log("Audio paused:", this.audio.music.paused, "ended:", this.audio.music.ended);
+                    if (this.audio.music.paused || this.audio.music.ended) {
+                        console.log("Attempting to play music");
                         this.audio.music.play().catch(e => console.log('Music play failed:', e));
+                    } else {
+                        console.log("Music already playing, skipping");
                     }
                 }
             }
