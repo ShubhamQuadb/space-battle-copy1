@@ -700,9 +700,9 @@
                 console.log("Space Battle: Showing options");
                 this.currentScreen = 'options';
                 if (this.container) {
-                    // Fix: Show correct state - if music is 'true' in localStorage, show 'ON'
-                    const musicState = localStorage.getItem('music') === 'true' ? 'ON' : 'OFF';
-                    const sfxState = localStorage.getItem('sfx') === 'true' ? 'ON' : 'OFF';
+                    // OFF = enabled, ON = disabled (opposite logic)
+                    const musicState = localStorage.getItem('music') === 'true' ? 'OFF' : 'ON';
+                    const sfxState = localStorage.getItem('sfx') === 'true' ? 'OFF' : 'ON';
 
                     this.container.innerHTML = `
                         <h1 class="game-title" style="color: #ffaa00;">OPTIONS</h1>
@@ -837,39 +837,43 @@
 
             toggleMusic: function(button) {
                 const currentState = button.textContent === 'ON';
-                // Fix: Button text should reflect actual state
+                // OFF = enabled, ON = disabled (opposite logic)
                 button.textContent = currentState ? 'OFF' : 'ON';
-                localStorage.setItem('music', currentState ? 'false' : 'true');
+                // If button shows ON (disabled), clicking should enable music, so set 'true'
+                // If button shows OFF (enabled), clicking should disable music, so set 'false'
+                localStorage.setItem('music', currentState ? 'true' : 'false');
                 if (window.game) {
                     if (currentState) {
-                        // Button shows ON, music is ON, now turning OFF
+                        // Button shows ON (disabled), now enabling (OFF)
+                        console.log("Turning music ON");
+                        window.game.muteMusic = false;
+                        window.game.playMusic();
+                    } else {
+                        // Button shows OFF (enabled), now disabling (ON)
                         console.log("Turning music OFF");
                         window.game.muteMusic = true;
                         window.game.stopMusic();
-                    } else {
-                        // Button shows OFF, music is OFF, now turning ON
-                        console.log("Turning music ON");
-                        window.game.muteMusic = false; // Set muteMusic to false FIRST
-                        console.log("Audio object:", window.game.audio.music);
-                        console.log("Paused state:", window.game.audio.music?.paused);
-                        window.game.playMusic();
                     }
                 }
-                console.log("Space Battle: Music", currentState ? 'muted' : 'unmuted');
+                console.log("Space Battle: Music", currentState ? 'enabled' : 'disabled');
             },
 
             toggleSFX: function(button) {
                 const currentState = button.textContent === 'ON';
+                // OFF = enabled, ON = disabled (opposite logic)
                 button.textContent = currentState ? 'OFF' : 'ON';
-                localStorage.setItem('sfx', currentState ? 'false' : 'true');
+                // If button shows ON (disabled), clicking should enable SFX, so set 'true'
+                // If button shows OFF (enabled), clicking should disable SFX, so set 'false'
+                localStorage.setItem('sfx', currentState ? 'true' : 'false');
                 if (window.game) {
-                    window.game.muteSFX = !currentState;
-                    // Test SFX when toggling
-                    if (!currentState) {
+                    // OFF = enabled (muteSFX = false), ON = disabled (muteSFX = true)
+                    window.game.muteSFX = currentState ? false : true;
+                    // Test SFX when enabling
+                    if (currentState) {
                         window.game.playSFX('select');
                     }
                 }
-                console.log("Space Battle: SFX", currentState ? 'muted' : 'unmuted');
+                console.log("Space Battle: SFX", currentState ? 'enabled' : 'disabled');
             },
             
             resetStats: function() {
