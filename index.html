@@ -613,6 +613,17 @@
                             <button type="button" class="menu-btn exit" onclick="event.preventDefault(); MenuUI.exitGame(); return false;">Exit</button>
                         </div>
                     `;
+                    
+                    // Force buttons to be clickable in fullscreen
+                    setTimeout(() => {
+                        const menuButtons = this.container.querySelectorAll('.menu-btn');
+                        menuButtons.forEach(btn => {
+                            btn.style.zIndex = '1000001';
+                            btn.style.position = 'relative';
+                            btn.style.pointerEvents = 'auto';
+                            btn.style.cursor = 'pointer';
+                        });
+                    }, 100);
                 }
             },
             
