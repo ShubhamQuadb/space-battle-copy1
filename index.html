@@ -1001,6 +1001,7 @@
                     console.log("Attempting to play music");
                     const audio = this.audio.music;
                     audio.currentTime = 0;
+                    audio.load(); // Reload the audio element
                     const playPromise = audio.play();
                     if (playPromise !== undefined) {
                         playPromise
