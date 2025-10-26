@@ -700,8 +700,9 @@
                 console.log("Space Battle: Showing options");
                 this.currentScreen = 'options';
                 if (this.container) {
-                    const musicState = localStorage.getItem('music') === 'false' ? 'OFF' : 'ON';
-                    const sfxState = localStorage.getItem('sfx') === 'false' ? 'OFF' : 'ON';
+                    // Fix: Show correct state - if music is 'true' in localStorage, show 'ON'
+                    const musicState = localStorage.getItem('music') === 'true' ? 'ON' : 'OFF';
+                    const sfxState = localStorage.getItem('sfx') === 'true' ? 'ON' : 'OFF';
 
                     this.container.innerHTML = `
                         <h1 class="game-title" style="color: #ffaa00;">OPTIONS</h1>
@@ -836,16 +837,17 @@
 
             toggleMusic: function(button) {
                 const currentState = button.textContent === 'ON';
+                // Fix: Button text should reflect actual state
                 button.textContent = currentState ? 'OFF' : 'ON';
                 localStorage.setItem('music', currentState ? 'false' : 'true');
                 if (window.game) {
                     if (currentState) {
-                        // Music was ON, now turning OFF
+                        // Button shows ON, music is ON, now turning OFF
                         console.log("Turning music OFF");
                         window.game.muteMusic = true;
                         window.game.stopMusic();
                     } else {
-                        // Music was OFF, now turning ON
+                        // Button shows OFF, music is OFF, now turning ON
                         console.log("Turning music ON");
                         window.game.muteMusic = false; // Set muteMusic to false FIRST
                         console.log("Audio object:", window.game.audio.music);
