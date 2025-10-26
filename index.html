@@ -997,26 +997,27 @@
             playMusic() {
                 console.log("playMusic called - muteMusic:", this.muteMusic, "audio exists:", !!this.audio.music);
                 if (!this.muteMusic && this.audio.music) {
-                    // Play music (already loaded in stopMusic)
                     console.log("Attempting to play music");
                     const audio = this.audio.music;
-                    try {
-                        audio.currentTime = 0;
-                        const playPromise = audio.play();
-                        if (playPromise !== undefined) {
-                            playPromise
-                                .then(() => {
-                                    console.log("Music started successfully");
-                                })
-                                .catch(error => {
-                                    console.log('Music play failed:', error);
-                                    // Try to reload and play again
+                    
+                    // Force play by resetting and playing
+                    audio.pause(); // Ensure we're paused
+                    audio.currentTime = 0;
+                    
+                    const playPromise = audio.play();
+                    if (playPromise !== undefined) {
+                        playPromise
+                            .then(() => {
+                                console.log("Music started successfully");
+                            })
+                            .catch(error => {
+                                console.log('Music play failed:', error);
+                                // Try to reload and play again after a small delay
+                                setTimeout(() => {
                                     audio.load();
                                     audio.play().catch(e => console.log('Retry play failed:', e));
-                                });
-                        }
-                    } catch (error) {
-                        console.log('Error trying to play music:', error);
+                                }, 100);
+                            });
                     }
                 } else {
                     console.log("Music muted or no audio object");
