@@ -1,9 +1,7 @@
 //#region "Variable"
-var adSpotInterstitial = "u4ck1t92";
-var adSpotRewardedVideo = "729jl614";
+var adSpotInterstitial = "zbjnq9gs";
+var adSpotRewardedVideo = "81xnt9bw";
 var packageName = "com.kaifoundry.spacebattle.sp";
-var gameName = "spacebattle";
-var gameVersion = "V1.0.0";
 var isAdReady = false;
 var isRVReady = false;
 
@@ -296,7 +294,7 @@ function callback_Banner(){
         console.log ("JioGames: onAdFailedToLoad "+placementId+" options "+JSON.stringify(options));
     };
     JioAds.onAdPrepared = function(placementId, adUxType) {
-        console.log ("JioGames: onAdPrepared "+placemenId);
+        console.log ("JioGames: onAdPrepared "+placementId);
     };
     JioAds.onAdRender = function(placementId) {
         console.log ("JioGames: onAdRender "+placementId);

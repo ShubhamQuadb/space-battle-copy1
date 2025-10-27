@@ -2803,5 +2803,29 @@
             });
         }
     </script>
+    
+    <!-- JioGames SDK Integration -->
+    <script src="jiogames_sp_wrapper.js"></script>
+    <script>
+        // Console logging for smartphone SDK
+        console.log("Space Battle - Smartphone SDK initialized");
+        window.addEventListener('load', function() {
+            console.log("Space Battle Smartphone - Page Loaded");
+            
+            // JioGames SDK Integration - Get user profile on game load
+            setTimeout(function() {
+                if (typeof getUserProfile === 'function') {
+                    getUserProfile();
+                    console.log("Space Battle: User profile requested");
+                }
+                
+                // Cache ads with 5 second delay between them
+                if (typeof gameCacheAd === 'function') {
+                    gameCacheAd();
+                    console.log("Space Battle: Ads caching started");
+                }
+            }, 1000);
+        });
+    </script>
 </body>
 </html>
