@@ -258,6 +258,9 @@ define(["model/game", "model/character", "model/inPlay", "model/canvas", "model/
             console.log("Space Battle: NEW HIGH SCORE! " + Math.floor(Game.highscore));
         }
         
+        // Save all statistics to localStorage
+        GameLogic.saveStats();
+        
         // Post score to JioGames SDK (always post current score)
         // if (typeof postScore === 'function') {
         //     postScore(finalScore);
@@ -303,6 +306,18 @@ define(["model/game", "model/character", "model/inPlay", "model/canvas", "model/
         LSM.set("interceptor", 0);
         LSM.set("tank", 0);
         LSM.set("transport", 0);
+        
+        // Force refresh the display
+        console.log("Space Battle: Statistics reset successfully");
+        console.log("Highscore:", Game.highscore);
+        console.log("Scout:", Game.scout);
+        console.log("Fighter:", Game.fighter);
+        console.log("Interceptor:", Game.interceptor);
+        console.log("Tank:", Game.tank);
+        console.log("Transport:", Game.transport);
+        
+        // Reload statistics to ensure they're properly updated
+        LSM.load();
     };
 
     var checkCollisions = function checkCollisions() {

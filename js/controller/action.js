@@ -226,6 +226,7 @@ define(["model/game", "model/canvas", "model/character", "model/images", "model/
                     Sounds.select.play();
                 }
                 GameLogic.resetStats();
+                console.log("Space Battle: Reset Stats button clicked - Statistics cleared!");
             }
         };
 
@@ -327,6 +328,12 @@ define(["model/game", "model/canvas", "model/character", "model/images", "model/
             Character.ship.player.hasShot = false;
             Character.ship.player.pos.x = 40;
             Character.ship.player.pos.y = 100;
+            
+            // Reload statistics from localStorage to ensure they're current
+            if (typeof LSM !== 'undefined' && LSM.load) {
+                LSM.load();
+                console.log("Space Battle: Statistics reloaded after game reset");
+            }
         };
 
         var Action = {

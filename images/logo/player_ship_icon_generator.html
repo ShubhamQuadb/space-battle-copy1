@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Player Ship Icon Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #000;
+            color: #fff;
+        }
+        .icon-preview {
+            margin: 20px;
+            padding: 20px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            display: inline-block;
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid #555;
+            margin: 10px;
+        }
+        button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0052a3;
+        }
+        .instructions {
+            background: #222;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Space Battle - Player Ship Icon Generator</h1>
+    
+    <div class="instructions">
+        <h3>Instructions:</h3>
+        <p>1. This will create icons using the player_ship.png image</p>
+        <p>2. Click "Generate Icons" to create both sizes</p>
+        <p>3. Download the generated icons</p>
+        <p>4. The icons will have a space background with the player ship centered</p>
+    </div>
+    
+    <button onclick="generateAllIcons()">Generate All Icons</button>
+    
+    <div class="icon-preview">
+        <h3>512x512 Icon</h3>
+        <canvas id="icon512" width="512" height="512"></canvas>
+        <br>
+        <button onclick="downloadIcon('icon512', 'player_ship_icon_512x512.png')">Download 512x512</button>
+    </div>
+    
+    <div class="icon-preview">
+        <h3>480x660 Icon</h3>
+        <canvas id="icon480" width="480" height="660"></canvas>
+        <br>
+        <button onclick="downloadIcon('icon480', 'player_ship_icon_480x660.png')">Download 480x660</button>
+    </div>
+
+    <script>
+        let playerShipImage = null;
+        
+        // Load the player ship image
+        function loadPlayerShipImage() {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => {
+                    playerShipImage = img;
+                    resolve(img);
+                };
+                img.onerror = () => {
+                    console.log('Player ship image not found, creating placeholder');
+                    resolve(null);
+                };
+                img.src = './player_ship.png';
+            });
+        }
+        
+        // Create space background
+        function createSpaceBackground(ctx, width, height) {
+            // Create gradient background
+            const gradient = ctx.createLinearGradient(0, 0, width, height);
+            gradient.addColorStop(0, '#001122');
+            gradient.addColorStop(0.3, '#003366');
+            gradient.addColorStop(0.7, '#001133');
+            gradient.addColorStop(1, '#000044');
+            
+            // Fill background
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
+            
+            // Add stars
+            ctx.fillStyle = '#ffffff';
+            for (let i = 0; i < 100; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const size = Math.random() * 2 + 0.5;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Add some larger stars
+            ctx.fillStyle = '#cccccc';
+            for (let i = 0; i < 20; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const size = Math.random() * 3 + 1;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Draw player ship or placeholder
+        function drawPlayerShip(ctx, centerX, centerY, size) {
+            if (playerShipImage) {
+                // Draw the actual player ship image
+                const shipWidth = size;
+                const shipHeight = size * 0.8; // Maintain aspect ratio
+                ctx.drawImage(playerShipImage, 
+                    centerX - shipWidth/2, centerY - shipHeight/2, 
+                    shipWidth, shipHeight);
+            } else {
+                // Draw placeholder ship
+                ctx.fillStyle = '#00aaff';
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY - size/2);
+                ctx.lineTo(centerX + size/3, centerY + size/2);
+                ctx.lineTo(centerX - size/3, centerY + size/2);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Ship wings
+                ctx.fillStyle = '#0088cc';
+                ctx.beginPath();
+                ctx.moveTo(centerX - size/2, centerY);
+                ctx.lineTo(centerX - size/3, centerY + size/3);
+                ctx.lineTo(centerX - size/6, centerY + size/6);
+                ctx.closePath();
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX + size/2, centerY);
+                ctx.lineTo(centerX + size/3, centerY + size/3);
+                ctx.lineTo(centerX + size/6, centerY + size/6);
+                ctx.closePath();
+                ctx.fill();
+            }
+        }
+        
+        // Create icon
+        function createIcon(canvasId, width, height) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Create space background
+            createSpaceBackground(ctx, width, height);
+            
+            // Draw player ship
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const shipSize = Math.min(width, height) * 0.4;
+            
+            drawPlayerShip(ctx, centerX, centerY, shipSize);
+            
+            // Add "Space Battle" text
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `bold ${width/25}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+            ctx.strokeText('SPACE BATTLE', centerX, centerY + shipSize + 40);
+            ctx.fillText('SPACE BATTLE', centerX, centerY + shipSize + 40);
+        }
+        
+        // Download function
+        function downloadIcon(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // Generate all icons
+        async function generateAllIcons() {
+            await loadPlayerShipImage();
+            createIcon('icon512', 512, 512);
+            createIcon('icon480', 480, 660);
+        }
+        
+        // Auto-generate on page load
+        window.onload = function() {
+            generateAllIcons();
+        };
+    </script>
+</body>
+</html>

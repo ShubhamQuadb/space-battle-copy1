@@ -10,6 +10,21 @@
     <meta name="screen-orientation" content="landscape">
     <meta name="x5-orientation" content="landscape">
     <meta name="full-screen" content="yes">
+    
+    <!-- App Icons -->
+    <link rel="shortcut icon" href="./images/logo/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="./images/logo/favicon.ico" />
+    <link rel="apple-touch-icon" href="./images/logo/logo_large.png" />
+    <link rel="apple-touch-icon" sizes="57x57" href="./images/logo/logo_small.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="./images/logo/logo_small.png" />
+    <link rel="apple-touch-icon" sizes="76x76" href="./images/logo/logo_small.png" />
+    <link rel="apple-touch-icon" sizes="114x114" href="./images/logo/logo_large.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="./images/logo/logo_large.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="./images/logo/logo_large.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="./images/logo/logo_large.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./images/logo/logo_large.png" />
+    <link rel="icon" sizes="480x660" href="./images/logo/player_ship_icon_480x660.png" />
+    <link rel="icon" sizes="512x512" href="./images/logo/player_ship_icon_512x512.png" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -832,6 +847,13 @@
                         }
                     }, 100);
                 }
+                
+                // Reset statistics to ensure clean restart
+                localStorage.setItem('highScore', '0');
+                localStorage.setItem('gamesPlayed', '0');
+                localStorage.setItem('totalEnemiesKilled', '0');
+                localStorage.setItem('bestLevel', '0');
+                
                 startNewGame();
             },
 
@@ -882,6 +904,13 @@
                     localStorage.removeItem('gamesPlayed');
                     localStorage.removeItem('totalEnemiesKilled');
                     localStorage.removeItem('bestLevel');
+                    
+                    // Set default values
+                    localStorage.setItem('highScore', '0');
+                    localStorage.setItem('gamesPlayed', '0');
+                    localStorage.setItem('totalEnemiesKilled', '0');
+                    localStorage.setItem('bestLevel', '0');
+                    
                     this.showStats();
                     console.log("Space Battle: Statistics reset");
                 }
@@ -1632,6 +1661,9 @@
                 this.enemies = [];
                 this.particles = [];
                 this.powerups = [];
+                
+                // Update UI immediately to show reset values
+                this.updateUI();
                 
                 // Start new game
                 this.start();
@@ -2396,6 +2428,12 @@
                     });
                 }
             }
+            
+            // Reset UI elements to initial state
+            document.getElementById('score').textContent = 'Score: 0';
+            document.getElementById('level').textContent = 'Level: 1';
+            document.getElementById('healthFill').style.width = '100%';
+            document.getElementById('enemiesLeft').textContent = 'Progress: 0/0 (0%)';
             
             // Create new game instance
             game = new SpaceShooterGame();
