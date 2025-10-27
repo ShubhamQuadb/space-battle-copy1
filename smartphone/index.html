@@ -741,13 +741,18 @@
             },
             
             showStats: function() {
-                console.log("Space Battle: Showing statistics");
+                console.log("=== SHOWING STATISTICS ===");
                 this.currentScreen = 'stats';
                 if (this.container) {
                     const highScore = localStorage.getItem('highScore') || '0';
-                    const gamesPlayed = localStorage.getItem('gamesPlayed') || '0';
                     const totalEnemiesKilled = localStorage.getItem('totalEnemiesKilled') || '0';
                     const bestLevel = localStorage.getItem('bestLevel') || '0';
+
+                    console.log(`Displaying statistics:`);
+                    console.log(`High Score: ${highScore}`);
+                    console.log(`Total Enemies Killed: ${totalEnemiesKilled}`);
+                    console.log(`Best Level: ${bestLevel}`);
+                    console.log("=== END SHOWING STATISTICS ===");
 
                     this.container.innerHTML = `
                         <h1 class="game-title" style="color: #00aaff;">STATISTICS</h1>
@@ -755,10 +760,6 @@
                             <div style="display: flex; justify-content: space-between; margin: 0.4rem 0; padding: 4px; background: rgba(255,255,255,0.1); border-radius: 3px; font-size: 0.7rem;">
                                 <span>High Score:</span>
                                 <span style="color: #ffaa00; font-weight: bold;">${highScore}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin: 0.4rem 0; padding: 4px; background: rgba(255,255,255,0.1); border-radius: 3px; font-size: 0.7rem;">
-                                <span>Games Played:</span>
-                                <span style="color: #00ff88; font-weight: bold;">${gamesPlayed}</span>
                             </div>
                             <div style="display: flex; justify-content: space-between; margin: 0.4rem 0; padding: 4px; background: rgba(255,255,255,0.1); border-radius: 3px; font-size: 0.7rem;">
                                 <span>Enemies Killed:</span>
@@ -822,6 +823,7 @@
 
             restartGame: function() {
                 console.log("Space Battle: Restarting game");
+                
                 this.overlay.style.display = 'none';
                 const gameSection = document.getElementById('gameSection');
                 if (gameSection) {
@@ -847,12 +849,6 @@
                         }
                     }, 100);
                 }
-                
-                // Reset statistics to ensure clean restart
-                localStorage.setItem('highScore', '0');
-                localStorage.setItem('gamesPlayed', '0');
-                localStorage.setItem('totalEnemiesKilled', '0');
-                localStorage.setItem('bestLevel', '0');
                 
                 startNewGame();
             },
@@ -1302,9 +1298,7 @@
                                 this.playSFX('explosion');
                                 this.enemies.splice(j, 1);
 
-                                // Save total enemies killed
-                                const totalKilled = parseInt(localStorage.getItem('totalEnemiesKilled') || '0');
-                                localStorage.setItem('totalEnemiesKilled', totalKilled + 1);
+                                // Note: totalEnemiesKilled is tracked by this.enemiesKilled and saved at game end
                             }
                             break;
                         }
@@ -1475,6 +1469,9 @@
                 // Stop game
                 this.gameRunning = false;
                 
+                // Save statistics when returning to menu
+                this.saveStatistics(true); // Game is ending
+                
                 // Hide game section
                 const gameSection = document.getElementById('gameSection');
                 if (gameSection) {
@@ -1503,7 +1500,7 @@
                 console.log(`Enemies: ${this.totalEnemiesInLevel}, Speed: ${this.gameSpeed}x`);
 
                 // Update best level
-                const bestLevel = parseInt(localStorage.getItem('bestLevel') || '1');
+                const bestLevel = parseInt(localStorage.getItem('bestLevel') || '0');
                 if (this.level > bestLevel) {
                     localStorage.setItem('bestLevel', this.level.toString());
                 }
@@ -1518,7 +1515,53 @@
 
             pauseGame() {
                 this.gameRunning = false;
+                
+                // Save statistics when pausing
+                this.saveStatistics(false); // Game is not ending, just pausing
+                
                 MenuUI.showMainMenu();
+            }
+
+            saveStatistics(isGameEnd = false) {
+                console.log("=== SAVING STATISTICS ===");
+                console.log(`Current game stats - Score: ${this.score}, Level: ${this.level}, Enemies Killed: ${this.enemiesKilled}`);
+                console.log(`Is game end: ${isGameEnd}`);
+                
+                // Get current localStorage values
+                const currentHighScore = parseInt(localStorage.getItem('highScore') || '0');
+                const currentGamesPlayed = parseInt(localStorage.getItem('gamesPlayed') || '0');
+                const currentTotalEnemies = parseInt(localStorage.getItem('totalEnemiesKilled') || '0');
+                const currentBestLevel = parseInt(localStorage.getItem('bestLevel') || '0');
+                
+                console.log(`Current localStorage values - High Score: ${currentHighScore}, Games Played: ${currentGamesPlayed}, Total Enemies: ${currentTotalEnemies}, Best Level: ${currentBestLevel}`);
+                
+                // Only increment gamesPlayed if this is actually the end of a game
+                const gamesPlayedIncrement = isGameEnd ? 1 : 0;
+                
+                // Save statistics
+                const stats = {
+                    highScore: Math.max(currentHighScore, this.score),
+                    gamesPlayed: currentGamesPlayed + gamesPlayedIncrement,
+                    totalEnemiesKilled: currentTotalEnemies + this.enemiesKilled,
+                    bestLevel: Math.max(currentBestLevel, this.level)
+                };
+
+                console.log(`New statistics to save:`, stats);
+
+                localStorage.setItem('highScore', stats.highScore.toString());
+                localStorage.setItem('gamesPlayed', stats.gamesPlayed.toString());
+                localStorage.setItem('totalEnemiesKilled', stats.totalEnemiesKilled.toString());
+                localStorage.setItem('bestLevel', stats.bestLevel.toString());
+                
+                // Verify what was actually saved
+                console.log(`Verification - localStorage now contains:`);
+                console.log(`High Score: ${localStorage.getItem('highScore')}`);
+                console.log(`Games Played: ${localStorage.getItem('gamesPlayed')}`);
+                console.log(`Total Enemies: ${localStorage.getItem('totalEnemiesKilled')}`);
+                console.log(`Best Level: ${localStorage.getItem('bestLevel')}`);
+                console.log("=== END SAVING STATISTICS ===");
+                
+                return stats;
             }
 
             gameOver() {
@@ -1526,17 +1569,7 @@
                 this.playSFX('death');
 
                 // Save statistics
-                const stats = {
-                    highScore: Math.max(parseInt(localStorage.getItem('highScore') || '0'), this.score),
-                    gamesPlayed: parseInt(localStorage.getItem('gamesPlayed') || '0') + 1,
-                    totalEnemiesKilled: parseInt(localStorage.getItem('totalEnemiesKilled') || '0') + this.enemiesKilled,
-                    bestLevel: Math.max(parseInt(localStorage.getItem('bestLevel') || '1'), this.level)
-                };
-
-                localStorage.setItem('highScore', stats.highScore.toString());
-                localStorage.setItem('gamesPlayed', stats.gamesPlayed.toString());
-                localStorage.setItem('totalEnemiesKilled', stats.totalEnemiesKilled.toString());
-                localStorage.setItem('bestLevel', stats.bestLevel.toString());
+                this.saveStatistics(true); // Game is ending
 
                 // Show Game Over modal
                 this.showGameOverModal();
@@ -2410,9 +2443,18 @@
         let game = null;
 
         function startNewGame() {
-            // Stop existing game if running
+            console.log("=== STARTING NEW GAME ===");
+            console.log(`Current game instance exists: ${!!game}`);
+            console.log(`Current game running: ${game ? game.gameRunning : 'N/A'}`);
+            
+            // Stop existing game if running and save statistics
             if (game && game.gameRunning) {
+                console.log("Stopping existing game and saving statistics...");
+                console.log(`Game stats before saving - Score: ${game.score}, Level: ${game.level}, Enemies Killed: ${game.enemiesKilled}`);
                 game.gameRunning = false;
+                game.saveStatistics(true); // Previous game is ending
+            } else {
+                console.log("No running game to save statistics from");
             }
             
             // Stop all sounds from previous game instance
@@ -2439,6 +2481,7 @@
             game = new SpaceShooterGame();
             window.game = game; // Make game globally accessible
             game.start();
+            console.log("=== NEW GAME STARTED ===");
         }
 
         // Enhanced Fullscreen functions for mobile - keeps buttons in fullscreen
@@ -2546,6 +2589,12 @@
 
         function showGameMenu() {
             console.log("showGameMenu called!");
+            
+            // Save current game statistics before pausing
+            if (window.game && window.game.gameRunning) {
+                console.log("Saving game statistics before showing menu...");
+                window.game.saveStatistics(false); // Game is not ending, just pausing
+            }
             
             // Stop the game
             if (window.game) {
