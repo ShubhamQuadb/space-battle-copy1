@@ -977,22 +977,53 @@
             }
 
             initializeCanvas() {
-                // Set canvas size to fill the viewport
+                // Set canvas size to fill the viewport reliably across rotations
                 const rect = this.canvas.getBoundingClientRect();
                 const dpr = window.devicePixelRatio || 1;
 
-                this.canvas.width = rect.width * dpr;
-                this.canvas.height = rect.height * dpr;
+                // Prefer window inner size; rect can be 0 during orientation/visibility transitions
+                let cssW = Math.max(rect.width || 0, window.innerWidth || 0, document.documentElement.clientWidth || 0);
+                let cssH = Math.max(rect.height || 0, window.innerHeight || 0, document.documentElement.clientHeight || 0);
 
-                // Scale the canvas back down using CSS
-                this.canvas.style.width = rect.width + 'px';
-                this.canvas.style.height = rect.height + 'px';
+                // Fallback minimums to avoid zero-sized canvas on some devices mid-rotation
+                if (cssW < 10 || cssH < 10) {
+                    cssW = window.innerWidth || 360;
+                    cssH = window.innerHeight || 640;
+                }
+
+                // Reset transforms to avoid cumulative scaling after rotations/resumes
+                if (this.ctx && this.ctx.setTransform) {
+                    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+                }
+
+                // Apply CSS size first to let layout settle
+                this.canvas.style.width = cssW + 'px';
+                this.canvas.style.height = cssH + 'px';
+
+                // Backing store size (device pixels)
+                this.canvas.width = Math.round(cssW * dpr);
+                this.canvas.height = Math.round(cssH * dpr);
 
                 // Scale the drawing context so everything draws at the correct size
                 this.ctx.scale(dpr, dpr);
 
-                this.width = rect.width;
-                this.height = rect.height;
+                this.width = cssW;
+                this.height = cssH;
+
+                // Clear to black to avoid artifacts after orientation changes
+                this.ctx.fillStyle = '#000';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+
+                // If the browser is still reporting tiny dims shortly after rotation, retry once
+                if (this.width < 50 || this.height < 50) {
+                    setTimeout(() => {
+                        const rect2 = this.canvas.getBoundingClientRect();
+                        if (rect2.width > this.width || rect2.height > this.height) {
+                            this.initializeCanvas();
+                            this.render();
+                        }
+                    }, 150);
+                }
             }
 
             initializeAudio() {
@@ -1128,6 +1159,36 @@
                 // Window resize
                 window.addEventListener('resize', () => {
                     this.initializeCanvas();
+                    // Redraw current frame to prevent temporary black frame
+                    this.render();
+                });
+
+                // Handle device orientation changes explicitly
+                window.addEventListener('orientationchange', () => {
+                    // Give layout time to settle, then re-init; do a second pass as safety
+                    setTimeout(() => {
+                        this.initializeCanvas();
+                        this.render();
+                    }, 250);
+                    setTimeout(() => {
+                        this.initializeCanvas();
+                        this.render();
+                    }, 700);
+                });
+
+                // Handle tab/app visibility changes (calls, notifications)
+                document.addEventListener('visibilitychange', () => {
+                    if (!document.hidden) {
+                        // Reinitialize canvas when returning to app
+                        this.initializeCanvas();
+                        this.render();
+                    }
+                });
+
+                // Some mobile browsers fire pageshow after interruption
+                window.addEventListener('pageshow', () => {
+                    this.initializeCanvas();
+                    this.render();
                 });
             }
 
