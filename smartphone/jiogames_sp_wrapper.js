@@ -1,12 +1,12 @@
 //#region "Variable"
 var adSpotInterstitial = "zbjnq9gs";
 var adSpotRewardedVideo = "81xnt9bw";
-var packageName = "com.kaifoundry.spacebattle.sp";
+var packageName = "com.kaifoundry.spacebattleSP";
 var isAdReady = false;
 var isRVReady = false;
 
 var banner_ZoneKey = "l9mp2wfq";
-var bannerPackageName = "com.kaifoundry.spacebattle.sp";
+var bannerPackageName = "com.kaifoundry.spacebattleSP";
 
 //#endregion
 
