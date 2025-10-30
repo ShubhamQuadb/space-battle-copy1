@@ -977,22 +977,53 @@
             }
 
             initializeCanvas() {
-                // Set canvas size to fill the viewport
+                // Set canvas size to fill the viewport reliably across rotations
                 const rect = this.canvas.getBoundingClientRect();
                 const dpr = window.devicePixelRatio || 1;
 
-                this.canvas.width = rect.width * dpr;
-                this.canvas.height = rect.height * dpr;
+                // Prefer window inner size; rect can be 0 during orientation/visibility transitions
+                let cssW = Math.max(rect.width || 0, window.innerWidth || 0, document.documentElement.clientWidth || 0);
+                let cssH = Math.max(rect.height || 0, window.innerHeight || 0, document.documentElement.clientHeight || 0);
 
-                // Scale the canvas back down using CSS
-                this.canvas.style.width = rect.width + 'px';
-                this.canvas.style.height = rect.height + 'px';
+                // Fallback minimums to avoid zero-sized canvas on some devices mid-rotation
+                if (cssW < 10 || cssH < 10) {
+                    cssW = window.innerWidth || 360;
+                    cssH = window.innerHeight || 640;
+                }
+
+                // Reset transforms to avoid cumulative scaling after rotations/resumes
+                if (this.ctx && this.ctx.setTransform) {
+                    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+                }
+
+                // Apply CSS size first to let layout settle
+                this.canvas.style.width = cssW + 'px';
+                this.canvas.style.height = cssH + 'px';
+
+                // Backing store size (device pixels)
+                this.canvas.width = Math.round(cssW * dpr);
+                this.canvas.height = Math.round(cssH * dpr);
 
                 // Scale the drawing context so everything draws at the correct size
                 this.ctx.scale(dpr, dpr);
 
-                this.width = rect.width;
-                this.height = rect.height;
+                this.width = cssW;
+                this.height = cssH;
+
+                // Clear to black to avoid artifacts after orientation changes
+                this.ctx.fillStyle = '#000';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+
+                // If the browser is still reporting tiny dims shortly after rotation, retry once
+                if (this.width < 50 || this.height < 50) {
+                    setTimeout(() => {
+                        const rect2 = this.canvas.getBoundingClientRect();
+                        if (rect2.width > this.width || rect2.height > this.height) {
+                            this.initializeCanvas();
+                            this.render();
+                        }
+                    }, 150);
+                }
             }
 
             initializeAudio() {
@@ -1128,6 +1159,36 @@
                 // Window resize
                 window.addEventListener('resize', () => {
                     this.initializeCanvas();
+                    // Redraw current frame to prevent temporary black frame
+                    this.render();
+                });
+
+                // Handle device orientation changes explicitly
+                window.addEventListener('orientationchange', () => {
+                    // Give layout time to settle, then re-init; do a second pass as safety
+                    setTimeout(() => {
+                        this.initializeCanvas();
+                        this.render();
+                    }, 250);
+                    setTimeout(() => {
+                        this.initializeCanvas();
+                        this.render();
+                    }, 700);
+                });
+
+                // Handle tab/app visibility changes (calls, notifications)
+                document.addEventListener('visibilitychange', () => {
+                    if (!document.hidden) {
+                        // Reinitialize canvas when returning to app
+                        this.initializeCanvas();
+                        this.render();
+                    }
+                });
+
+                // Some mobile browsers fire pageshow after interruption
+                window.addEventListener('pageshow', () => {
+                    this.initializeCanvas();
+                    this.render();
                 });
             }
 
@@ -1355,6 +1416,17 @@
                 this.gameRunning = false;
                 this.playSFX('levelUp');
                 
+                // Check if in portrait mode - don't show popup
+                const isPortrait = window.innerHeight > window.innerWidth;
+                if (isPortrait) {
+                    console.log("Portrait mode detected - skipping level complete popup");
+                    // Just proceed to next level without popup
+                    setTimeout(() => {
+                        this.startNextLevel();
+                    }, 1000);
+                    return;
+                }
+                
                 // Create congratulations popup
                 const popup = document.createElement('div');
                 popup.id = 'levelCompletePopup';
@@ -1380,39 +1452,45 @@
                 popup.innerHTML = `
                     <div style="
                         background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
-                        padding: 0.8rem;
+                        padding: 1rem;
                         border-radius: 12px;
                         text-align: center;
                         color: #fff;
-                        max-width: 280px;
-                        width: 70%;
-                        height: 50vh;
+                        max-width: 320px;
+                        width: 85%;
+                        max-height: 60vh;
+                        min-height: 200px;
                         overflow-y: auto;
                         border: 2px solid #00ff88;
                         box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-between;
                     ">
-                        <h2 style="color: #00ff88; font-size: 1rem; margin-bottom: 0.4rem; text-shadow: 0 0 10px #00ff88;">
-                            🎉 CONGRATULATIONS! 🎉
-                        </h2>
-                        <p style="font-size: 0.8rem; margin-bottom: 0.4rem;">
-                            Level ${this.level} Complete!
-                        </p>
-                        <p style="color: #ffaa00; margin-bottom: 0.6rem; font-size: 0.7rem;">
-                            Enemies Defeated: ${this.enemiesKilled}/${this.totalEnemiesInLevel}
-                        </p>
-                        <p style="color: #00ccff; margin-bottom: 0.8rem; font-size: 0.7rem;">
-                            Next Level: ${this.level + 1} (${this.calculateEnemiesForLevel(this.level + 1)} enemies)
-                        </p>
+                        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                            <h2 style="color: #00ff88; font-size: 1.1rem; margin-bottom: 0.5rem; text-shadow: 0 0 10px #00ff88;">
+                                🎉 CONGRATULATIONS! 🎉
+                            </h2>
+                            <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">
+                                Level ${this.level} Complete!
+                            </p>
+                            <p style="color: #ffaa00; margin-bottom: 0.5rem; font-size: 0.8rem;">
+                                Enemies Defeated: ${this.enemiesKilled}/${this.totalEnemiesInLevel}
+                            </p>
+                            <p style="color: #00ccff; margin-bottom: 0.5rem; font-size: 0.8rem;">
+                                Next Level: ${this.level + 1} (${this.calculateEnemiesForLevel(this.level + 1)} enemies)
+                            </p>
+                        </div>
                         <button onclick="game.startNextLevel()" style="
                             background: linear-gradient(45deg, #00ff88, #00ccff);
                             border: none;
                             color: #000;
-                            padding: 8px 16px;
-                            font-size: 0.8rem;
+                            padding: 10px 20px;
+                            font-size: 0.9rem;
                             font-weight: bold;
                             border-radius: 6px;
                             cursor: pointer;
-                            margin: 0.3rem;
+                            margin-top: 0.5rem;
                             transition: all 0.3s ease;
                             display: block;
                             width: 100%;
