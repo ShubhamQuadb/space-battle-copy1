@@ -4,6 +4,9 @@ var adSpotRewardedVideo = "81xnt9bw";
 var packageName = "com.kaifoundry.spacebattleSP";
 var isAdReady = false;
 var isRVReady = false;
+// Expose ad ready states globally so app.js can check them
+window.isAdReady = false;
+window.isRVReady = false;
 
 var banner_ZoneKey = "l9mp2wfq";
 var bannerPackageName = "com.kaifoundry.spacebattleSP";
@@ -12,6 +15,7 @@ var bannerPackageName = "com.kaifoundry.spacebattleSP";
 
 
 console.log("Jiogames: Initialized SDK!");
+// Removed auto-show on load - ads will be shown on START button click (Pac-Man style flow)
 function postScore(score) {
     console.log("Jiogames: postScore() ",score);
     if(!score){
@@ -77,8 +81,8 @@ function getUserProfile() {
 
 window.onAdPrepared = function (adSpotKey) {
     console.log("JioGames: onAdPrepared "+adSpotKey.toString());
-    adSpotKey == adSpotInterstitial && (isAdReady = true, console.log("JioGames: onAdPrepared MidRoll " + isAdReady));
-    adSpotKey == adSpotRewardedVideo && (isRVReady = true, console.log("JioGames: onAdPrepared RewardedVideo " + isRVReady));   
+    adSpotKey == adSpotInterstitial && (isAdReady = true, window.isAdReady = true, console.log("JioGames: onAdPrepared Show Ads " + isAdReady));
+    adSpotKey == adSpotRewardedVideo && (isRVReady = true, window.isRVReady = true, console.log("JioGames: onAdPrepared RewardedVideo " + isRVReady));
 };
 
 window.onAdClosed = function (data, pIsVideoCompleted, pIsEligibleForReward) {
@@ -94,8 +98,8 @@ window.onAdClosed = function (data, pIsVideoCompleted, pIsEligibleForReward) {
     }
     console.log("JioGames: onAdClosed "+data.toString(), "localData "+localData[0]+" "+localData[1]+" "+localData[2]);
 
-    adSpotKey == adSpotInterstitial && (isAdReady = false, console.log("JioGames: onAdClose MidRoll " + isAdReady));
-    adSpotKey == adSpotRewardedVideo && (isRVReady = false, console.log("JioGames: onAdClose RewardedVideo " + isRVReady));
+    adSpotKey == adSpotInterstitial && (isAdReady = false, window.isAdReady = false, console.log("JioGames: onAdClose Show Ads " + isAdReady));
+    adSpotKey == adSpotRewardedVideo && (isRVReady = false, window.isRVReady = false, console.log("JioGames: onAdClose RewardedVideo " + isRVReady));
 
     if (adSpotKey == adSpotRewardedVideo && isEligibleForReward) {
         GratifyReward();
@@ -114,8 +118,8 @@ window.onAdFailedToLoad = function (data, pDescription){
 
     console.log("JioGames: onAdFailedToLoad "+data.toString()+" localData "+localData[0]+" "+localData[1]);
     
-    adSpotKey == adSpotInterstitial && (isAdReady = false, console.log("JioGames: onAdFailedToLoad MidRoll " + isAdReady+" description "+description));
-    adSpotKey == adSpotRewardedVideo && (isRVReady = false, console.log("JioGames: onAdFailedToLoad RewardedVideo " + isRVReady+" description "+description));    
+    adSpotKey == adSpotInterstitial && (isAdReady = false, window.isAdReady = false, console.log("JioGames: onAdFailedToLoad Show Ads " + isAdReady+" description "+description));
+    adSpotKey == adSpotRewardedVideo && (isRVReady = false, window.isRVReady = false, console.log("JioGames: onAdFailedToLoad RewardedVideo " + isRVReady+" description "+description));    
 };
 
 
@@ -156,6 +160,14 @@ window.onClientResume = function () {
 
 function GratifyReward() {
     console.log("JioGames: GratifyReward Game user here");
+    try {
+        if (typeof window.grantRewardExtraHealth === 'function') {
+            window.grantRewardExtraHealth();
+            console.log("JioGames: Reward granted - Extra health given!");
+        } else {
+            console.warn("JioGames: grantRewardExtraHealth function not found. Reward not applied.");
+        }
+    } catch(e) { console.log(e); }
 };
 
 function cacheAd() {
@@ -171,9 +183,12 @@ function cacheAdRewarded() {
     }    
 }
 function showAd() {
-    console.log("JioGames: showAd called");
+    console.log("JioGames: showAd (Show Ads) called. isAdReady=", isAdReady);
     if (isAdReady) {
+        console.log("JioGames: calling showAdMidRoll('" + adSpotInterstitial + "', '"+packageName+"')");
         showAdMidRoll(adSpotInterstitial, packageName);
+    } else {
+        console.warn("JioGames: showAd skipped - show ads not ready yet. Ensure cacheAd() ran and onAdPrepared fired.");
     }
 }
 function showAdRewarded() {

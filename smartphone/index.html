@@ -812,6 +812,20 @@
 
             startGame: function() {
                 console.log("Space Battle: Starting game");
+                // Try to show ads before starting
+                try{
+                    if (typeof showAd==='function') {
+                        showAd();
+                    } else if (typeof cacheAd==='function') {
+                        cacheAd();
+                        setTimeout(function(){ if (typeof showAd==='function') { showAd(); } }, 2000);
+                    }
+                }catch(e){}
+                // Hide banner when game starts
+                try{ if (typeof hideBanner === 'function') { hideBanner(); } }catch(e){}
+                // Ensure cache cycle continues
+                try{ if(typeof cacheAd==='function'){ cacheAd(); } }catch(e){}
+                
                 this.overlay.style.display = 'none';
                 const gameSection = document.getElementById('gameSection');
                 if (gameSection) {
@@ -1200,6 +1214,18 @@
                 this.score = 0;
                 this.health = 100;
                 this.enemiesKilled = 0;
+                this.totalEnemiesKilled = 0; // Track total enemies killed for mid-roll ad
+                
+                // Expose reward function globally for SDK
+                window.grantRewardExtraHealth = () => {
+                    try {
+                        if (this && typeof this.health !== 'undefined') {
+                            this.health = Math.min(this.health + 50, 100); // Add 50 health, cap at 100
+                            console.log("Space Battle: Reward granted - +50 health (total: " + this.health + ")");
+                            this.updateUI();
+                        }
+                    } catch(e) { console.log(e); }
+                };
 
                 // Clear arrays
                 this.bullets = [];
@@ -1355,11 +1381,26 @@
                             if (this.enemies[j].health <= 0) {
                                 this.score += this.enemies[j].points;
                                 this.enemiesKilled++;
+                                this.totalEnemiesKilled++; // Track total for mid-roll ad
                                 this.createExplosion(this.enemies[j].x, this.enemies[j].y);
                                 this.playSFX('explosion');
                                 this.enemies.splice(j, 1);
 
-                                // Note: totalEnemiesKilled is tracked by this.enemiesKilled and saved at game end
+                                // Mid roll show ads - show after killing 5 enemies
+                                if (this.totalEnemiesKilled === 5 && typeof showAd === 'function') {
+                                    setTimeout(() => {
+                                        if (typeof window.isAdReady !== 'undefined' && window.isAdReady === true) {
+                                            showAd();
+                                            console.log("Space Battle: Mid roll show ads shown (after 5 enemies killed)");
+                                        } else {
+                                            // Cache ad if not ready
+                                            if (typeof cacheAd === 'function') {
+                                                cacheAd();
+                                                console.log("Space Battle: Mid roll ad not ready, caching...");
+                                            }
+                                        }
+                                    }, 500);
+                                }
                             }
                             break;
                         }
@@ -1372,6 +1413,7 @@
                         if (this.player.collidesWith(this.enemies[i], 0.4)) { // 40% margin
                             this.health -= 20;
                             this.enemiesKilled++;
+                            this.totalEnemiesKilled++; // Track total for mid-roll ad
                             this.createExplosion(this.enemies[i].x, this.enemies[i].y);
                             this.playSFX('explosion');
                             this.enemies.splice(i, 1);
@@ -1415,6 +1457,53 @@
                 console.log("showLevelCompletePopup called!");
                 this.gameRunning = false;
                 this.playSFX('levelUp');
+                
+                // Show rewarded ad on level complete (not on game over)
+                setTimeout(() => {
+                    // Cache rewarded ad if not ready
+                    if (typeof cacheAdRewarded === 'function') {
+                        cacheAdRewarded();
+                        console.log("Space Battle: Level Complete - Rewarded ad caching started");
+                    }
+                    
+                    // Show message while ad loads
+                    console.log("Space Battle: Level Complete - Watch ads for extra life");
+                    
+                    var adReadyShown = false;
+                    var checkCount = 0;
+                    var maxChecks = 60; // 60 checks * 500ms = 30 seconds max wait
+                    
+                    // Wait for ad to be ready, then show option
+                    var checkAdReady = setInterval(() => {
+                        checkCount++;
+                        
+                        if (typeof showAdRewarded === 'function' && window.isRVReady === true) {
+                            clearInterval(checkAdReady);
+                            if (!adReadyShown) {
+                                adReadyShown = true;
+                                console.log("Space Battle: Rewarded ad ready - showing option");
+                                
+                                // Wait for user tap/click to show rewarded ad
+                                var rewardedClickHandler = () => {
+                                    document.removeEventListener('click', rewardedClickHandler);
+                                    document.removeEventListener('touchstart', rewardedClickHandler);
+                                    showAdRewarded();
+                                    console.log("Space Battle: User tapped - showing rewarded ad for extra life");
+                                };
+                                document.addEventListener('click', rewardedClickHandler, {once: true});
+                                document.addEventListener('touchstart', rewardedClickHandler, {once: true});
+                            }
+                        } else if (checkCount >= maxChecks) {
+                            clearInterval(checkAdReady);
+                            if (window.isRVReady !== true) {
+                                console.log("Space Battle: Rewarded ad failed to load after 30 seconds");
+                            }
+                        }
+                    }, 500);
+                }, 1000);
+                
+                // Reset totalEnemiesKilled for next level
+                this.totalEnemiesKilled = 0;
                 
                 // Check if in portrait mode - don't show popup
                 const isPortrait = window.innerHeight > window.innerWidth;
@@ -1571,6 +1660,7 @@
             levelUp() {
                 this.level++;
                 this.enemiesKilled = 0;
+                this.totalEnemiesKilled = 0; // Reset for new level
                 this.totalEnemiesInLevel = this.calculateEnemiesForLevel(this.level);
                 this.gameSpeed = this.calculateSpeedMultiplier(this.level);
 
@@ -2890,19 +2980,41 @@
         window.addEventListener('load', function() {
             console.log("Space Battle Smartphone - Page Loaded");
             
-            // JioGames SDK Integration - Get user profile on game load
+            // Sequential ad loading with proper delays (Pac-Man style flow)
+            // Step 1: Get user profile first
             setTimeout(function() {
                 if (typeof getUserProfile === 'function') {
                     getUserProfile();
                     console.log("Space Battle: User profile requested");
                 }
-                
-                // Cache ads with 5 second delay between them
-                if (typeof gameCacheAd === 'function') {
-                    gameCacheAd();
-                    console.log("Space Battle: Ads caching started");
+            }, 1500);
+            
+            // Step 2: Load banner (3 seconds after load)
+            setTimeout(function() {
+                try{
+                    if (typeof loadBanner === 'function') { 
+                        loadBanner();
+                        console.log("Space Battle: Banner loading started");
+                        // Show banner after it loads
+                        setTimeout(function(){ 
+                            if (typeof showBanner === 'function') { 
+                                showBanner(); 
+                                if (typeof setBottomBanner === 'function') { setBottomBanner(); } 
+                            } 
+                        }, 800);
+                    }
+                } catch(e) { console.log(e); }
+            }, 3000);
+            
+            // Step 3: Cache show ads (6 seconds after load, after banner)
+            setTimeout(function() {
+                if (typeof cacheAd === 'function') {
+                    cacheAd();
+                    console.log("Space Battle: Show ads caching started");
                 }
-            }, 1000);
+            }, 6000);
+            
+            // Step 4: Rewarded video will be cached only when level complete happens (not on initial load)
         });
     </script>
 </body>
