@@ -814,17 +814,25 @@
                 console.log("Space Battle: Starting game");
                 // Try to show ads before starting
                 try{
-                    if (typeof showAd==='function') {
+                    if (typeof showAd==='function' && typeof window.isAdReady !== 'undefined' && window.isAdReady === true) {
                         showAd();
-                    } else if (typeof cacheAd==='function') {
+                    } else if (typeof cacheAd==='function' && typeof window.isAdReady !== 'undefined' && window.isAdReady === false) {
                         cacheAd();
-                        setTimeout(function(){ if (typeof showAd==='function') { showAd(); } }, 2000);
+                        setTimeout(function(){ 
+                            if (typeof showAd==='function' && typeof window.isAdReady !== 'undefined' && window.isAdReady === true) { 
+                                showAd(); 
+                            } 
+                        }, 2000);
                     }
                 }catch(e){}
                 // Hide banner when game starts
                 try{ if (typeof hideBanner === 'function') { hideBanner(); } }catch(e){}
-                // Ensure cache cycle continues
-                try{ if(typeof cacheAd==='function'){ cacheAd(); } }catch(e){}
+                // Ensure cache cycle continues (only if ad not ready)
+                try{ 
+                    if(typeof cacheAd==='function' && typeof window.isAdReady !== 'undefined' && window.isAdReady === false) {
+                        cacheAd(); 
+                    }
+                }catch(e){}
                 
                 this.overlay.style.display = 'none';
                 const gameSection = document.getElementById('gameSection');
