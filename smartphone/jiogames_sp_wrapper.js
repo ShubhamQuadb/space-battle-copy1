@@ -1,6 +1,6 @@
 //#region "Variable"
-var adSpotInterstitial = "zbjnq9gs";
-var adSpotRewardedVideo = "81xnt9bw";
+var adSpotInterstitial = "g9b8hri2";
+var adSpotRewardedVideo = "m79aikjs";
 var packageName = "com.kaifoundry.spacebattleSP";
 var isAdReady = false;
 var isRVReady = false;
@@ -8,7 +8,7 @@ var isRVReady = false;
 window.isAdReady = false;
 window.isRVReady = false;
 
-var banner_ZoneKey = "l9mp2wfq";
+var banner_ZoneKey = "bgp7rjf2";
 var bannerPackageName = "com.kaifoundry.spacebattleSP";
 
 //#endregion
