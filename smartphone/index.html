@@ -812,27 +812,8 @@
 
             startGame: function() {
                 console.log("Space Battle: Starting game");
-                // Try to show ads before starting
-                try{
-                    if (typeof showAd==='function' && typeof window.isAdReady !== 'undefined' && window.isAdReady === true) {
-                        showAd();
-                    } else if (typeof cacheAd==='function' && typeof window.isAdReady !== 'undefined' && window.isAdReady === false) {
-                        cacheAd();
-                        setTimeout(function(){ 
-                            if (typeof showAd==='function' && typeof window.isAdReady !== 'undefined' && window.isAdReady === true) { 
-                                showAd(); 
-                            } 
-                        }, 2000);
-                    }
-                }catch(e){}
                 // Hide banner when game starts
                 try{ if (typeof hideBanner === 'function') { hideBanner(); } }catch(e){}
-                // Ensure cache cycle continues (only if ad not ready)
-                try{ 
-                    if(typeof cacheAd==='function' && typeof window.isAdReady !== 'undefined' && window.isAdReady === false) {
-                        cacheAd(); 
-                    }
-                }catch(e){}
                 
                 this.overlay.style.display = 'none';
                 const gameSection = document.getElementById('gameSection');
@@ -1394,21 +1375,7 @@
                                 this.playSFX('explosion');
                                 this.enemies.splice(j, 1);
 
-                                // Mid roll show ads - show after killing 5 enemies
-                                if (this.totalEnemiesKilled === 5 && typeof showAd === 'function') {
-                                    setTimeout(() => {
-                                        if (typeof window.isAdReady !== 'undefined' && window.isAdReady === true) {
-                                            showAd();
-                                            console.log("Space Battle: Mid roll show ads shown (after 5 enemies killed)");
-                                        } else {
-                                            // Cache ad if not ready
-                                            if (typeof cacheAd === 'function') {
-                                                cacheAd();
-                                                console.log("Space Battle: Mid roll ad not ready, caching...");
-                                            }
-                                        }
-                                    }, 500);
-                                }
+                                // Mid-roll interstitial removed
                             }
                             break;
                         }
@@ -2986,6 +2953,8 @@
         // Console logging for smartphone SDK
         console.log("Space Battle - Smartphone SDK initialized");
         window.addEventListener('load', function() {
+            // Immediately prepare interstitial cache on game load (one-time)
+            try { if (typeof cacheAd === 'function') { cacheAd(); } } catch(e){}
             console.log("Space Battle Smartphone - Page Loaded");
             
             // Sequential ad loading with proper delays (avoid all loading together)
@@ -3008,8 +2977,8 @@
                             if (typeof showBanner === 'function') { 
                                 showBanner(); 
                                 if (typeof setBottomBanner === 'function') { setBottomBanner(); } 
-                            } 
-                        }, 1000);
+                }
+            }, 1000);
                     }
                 } catch(e) { console.log(e); }
             }, 5000);
