@@ -171,16 +171,20 @@ function GratifyReward() {
 };
 
 function cacheAd() {
-    console.log("JioGames: cacheAd called");
-    if (!isAdReady) {
-        cacheAdMidRoll(adSpotInterstitial, packageName);
+    if (isAdReady) {
+        console.log("JioGames: cacheAd skipped - ad already ready (isAdReady=true)");
+        return;
     }
+    console.log("JioGames: cacheAd called - caching show ads");
+    cacheAdMidRoll(adSpotInterstitial, packageName);
 }
 function cacheAdRewarded() {
-    console.log("JioGames: cacheAdRewarded called");
-    if (!isRVReady) {
-        cacheAdRewardedVideo(adSpotRewardedVideo, packageName);
-    }    
+    if (isRVReady) {
+        console.log("JioGames: cacheAdRewarded skipped - rewarded ad already ready (isRVReady=true)");
+        return;
+    }
+    console.log("JioGames: cacheAdRewarded called - caching rewarded ad");
+    cacheAdRewardedVideo(adSpotRewardedVideo, packageName);
 }
 function showAd() {
     console.log("JioGames: showAd (Show Ads) called. isAdReady=", isAdReady);
