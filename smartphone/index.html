@@ -675,40 +675,50 @@
             hideInGameMenu: function() {
                 console.log("Space Battle: Hiding in-game menu");
                 const menuOverlay = document.getElementById('menuOverlay');
-                if (menuOverlay) {
-                    menuOverlay.style.display = 'none';
-                }
-                
-                // Show game section again
                 const gameSection = document.getElementById('gameSection');
-                if (gameSection) {
-                    gameSection.style.display = 'block';
-                    
-                    // Re-enter fullscreen if it was exited
-                    setTimeout(() => {
-                        const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
-                                             document.mozFullScreenElement || document.msFullscreenElement);
-                        
-                        if (!isFullscreen) {
-                            // Re-enter fullscreen
-                            if (gameSection.requestFullscreen) {
-                                gameSection.requestFullscreen().catch(err => {});
-                            } else if (gameSection.webkitRequestFullscreen) {
-                                gameSection.webkitRequestFullscreen().catch(err => {});
-                            } else if (gameSection.mozRequestFullScreen) {
-                                gameSection.mozRequestFullScreen().catch(err => {});
-                            } else if (gameSection.msRequestFullscreen) {
-                                gameSection.msRequestFullscreen().catch(err => {});
-                            }
-                        }
-                    }, 100);
-                    
-                    // Resume game if it was running
-                    if (window.game) {
-                        window.game.gameRunning = true;
-                        window.game.gameLoop();
+
+                // If the menu was opened from gameplay, resume gameplay
+                if (window.wasGameRunningBeforeMenu) {
+                    if (menuOverlay) {
+                        menuOverlay.style.display = 'none';
                     }
+                    if (gameSection) {
+                        gameSection.style.display = 'block';
+                        // Re-enter fullscreen if it was exited
+                        setTimeout(() => {
+                            const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement ||
+                                document.mozFullScreenElement || document.msFullscreenElement);
+                            if (!isFullscreen) {
+                                if (gameSection.requestFullscreen) {
+                                    gameSection.requestFullscreen().catch(err => {});
+                                } else if (gameSection.webkitRequestFullscreen) {
+                                    gameSection.webkitRequestFullscreen().catch(err => {});
+                                } else if (gameSection.mozRequestFullScreen) {
+                                    gameSection.mozRequestFullScreen().catch(err => {});
+                                } else if (gameSection.msRequestFullscreen) {
+                                    gameSection.msRequestFullscreen().catch(err => {});
+                                }
+                            }
+                        }, 100);
+                        // Resume game
+                        if (window.game) {
+                            window.game.gameRunning = true;
+                            window.game.gameLoop();
+                        }
+                    }
+                    // Reset flag
+                    window.wasGameRunningBeforeMenu = false;
+                    return;
                 }
+
+                // If game hasn't started, return to main menu (keep overlay visible)
+                if (menuOverlay) {
+                    menuOverlay.style.display = 'flex';
+                }
+                if (gameSection) {
+                    gameSection.style.display = 'none';
+                }
+                this.showMainMenu();
             },
             
             showOptions: function() {
@@ -822,6 +832,13 @@
                     gameSection.style.display = 'block';
                 }
                 startNewGame();
+
+                // Immediately show in-game menu once the game starts (overlay on top of gameplay)
+                setTimeout(() => {
+                    if (typeof MenuUI !== 'undefined' && MenuUI && MenuUI.showInGameMenu) {
+                        MenuUI.showInGameMenu();
+                    }
+                }, 150);
             },
 
             restartGame: function() {
@@ -2741,6 +2758,8 @@
             
             // Stop the game
             if (window.game) {
+                // Remember that game was running when opening menu
+                window.wasGameRunningBeforeMenu = !!window.game.gameRunning;
                 window.game.gameRunning = false;
             }
             
