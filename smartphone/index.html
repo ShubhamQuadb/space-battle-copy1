@@ -793,7 +793,7 @@
             },
 
             // Rewarded confirmation modal
-            showRewardedConfirm: function(message, onYes) {
+            showRewardedConfirm: function(message, onYes, onNo) {
                 if (!this.overlay) { this.overlay = document.getElementById('menuOverlay'); }
                 if (!this.container) { this.container = document.getElementById('menuContainer'); }
 
@@ -855,13 +855,19 @@
 
                     document.body.appendChild(this._confirmEl);
 
-                    noBtn.addEventListener('click', () => {
-                        this._confirmEl.style.display = 'none';
-                    });
                     yesBtn.addEventListener('click', () => {
                         this._confirmEl.style.display = 'none';
                         try { if (typeof onYes === 'function') { onYes(); } } catch(e) {}
                     });
+                }
+
+                // Update NO button handler each time (to support dynamic onNo)
+                const noBtn = this._confirmEl.querySelector('button:last-child');
+                if (noBtn) {
+                    noBtn.onclick = () => {
+                        this._confirmEl.style.display = 'none';
+                        try { if (typeof onNo === 'function') { onNo(); } } catch(e) {}
+                    };
                 }
 
                 const msgEl = this._confirmEl.querySelector('#rvConfirmText');
@@ -870,10 +876,10 @@
             },
 
             // Helper to trigger rewarded via confirmation
-            requestRewarded: function(message) {
+            requestRewarded: function(message, onNo) {
                 this.showRewardedConfirm(message || 'Watch a video to get extra life?', function() {
                     try { if (typeof showAdRewarded === 'function') { showAdRewarded(); } } catch(e) {}
-                });
+                }, onNo);
             },
             
             showHelp: function() {

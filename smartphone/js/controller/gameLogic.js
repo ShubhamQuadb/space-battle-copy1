@@ -272,9 +272,12 @@ define(["model/game", "model/character", "model/inPlay", "model/canvas", "model/
         try {
             if (typeof window !== 'undefined' && window.isRVReady === true && typeof window.MenuUI !== 'undefined' && typeof showAdRewarded === 'function') {
                 // Ask user to continue via rewarded
-                window.MenuUI.requestRewarded('Continue with extra health by watching a video?');
-                // Fallback path: if user declines from modal, developer should call midroll.
-                // To ensure a fallback, also post score + midroll if rewarded isn’t ready.
+                var onNoCallback = function() {
+                    // User declined: post score + midroll
+                    if (typeof postScore === 'function') { postScore(finalScore); }
+                    if (typeof showAd === 'function') { setTimeout(function(){ showAd(); }, 500); }
+                };
+                window.MenuUI.requestRewarded('Continue with extra health by watching a video?', onNoCallback);
             } else {
                 // Not ready → post score + midroll
                 if (typeof postScore === 'function') { postScore(finalScore); }
