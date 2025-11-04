@@ -268,19 +268,19 @@ define(["model/game", "model/character", "model/inPlay", "model/canvas", "model/
         // Save all statistics to localStorage
         GameLogic.saveStats();
         
-        // Post score to JioGames SDK (always post current score)
-        if (typeof postScore === 'function') {
-            postScore(finalScore);
-            console.log("Space Battle: Score posted to SDK - " + finalScore);
-        }
-        
-        // Show midroll ad on game over (JioGames SDK)
-        if (typeof showAd === 'function') {
-            setTimeout(function() {
-                showAd();
-                console.log("Space Battle: Showing midroll ad");
-            }, 500);
-        }
+        // Rewarded continue flow at Game Over
+        try {
+            if (typeof window !== 'undefined' && window.isRVReady === true && typeof window.MenuUI !== 'undefined' && typeof showAdRewarded === 'function') {
+                // Ask user to continue via rewarded
+                window.MenuUI.requestRewarded('Continue with extra health by watching a video?');
+                // Fallback path: if user declines from modal, developer should call midroll.
+                // To ensure a fallback, also post score + midroll if rewarded isn’t ready.
+            } else {
+                // Not ready → post score + midroll
+                if (typeof postScore === 'function') { postScore(finalScore); }
+                if (typeof showAd === 'function') { setTimeout(function(){ showAd(); }, 500); }
+            }
+        } catch(e) { console.log(e); }
         
         GameLogic.uploadStats(isHighscore);
         Game.screen = "game_over";
