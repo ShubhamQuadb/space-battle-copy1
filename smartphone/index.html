@@ -223,24 +223,29 @@
         }
         
         .menu-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-top: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+            width: 100%;
+            max-width: 360px;
+            margin-left: auto;
+            margin-right: auto;
         }
         
         .menu-btn {
             background: linear-gradient(45deg, #00ff88, #00ccff);
             border: none;
             color: #000;
-            padding: 8px 16px;
-            font-size: 0.75rem;
+            padding: 8px 10px;
+            font-size: 0.72rem;
             font-weight: bold;
             border-radius: 5px;
             cursor: pointer;
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 0.3px;
+            width: 100%;
         }
 
         .menu-btn:hover {
@@ -600,6 +605,7 @@
             overlay: null,
             container: null,
             currentScreen: 'main',
+            _confirmEl: null,
             
             init: function() {
                 console.log("Space Battle: Initializing Modern Menu System");
@@ -625,7 +631,6 @@
                             <button type="button" class="menu-btn options" onclick="event.preventDefault(); MenuUI.showOptions(); return false;">Options</button>
                             <button type="button" class="menu-btn stats" onclick="event.preventDefault(); MenuUI.showStats(); return false;">Statistics</button>
                             <button type="button" class="menu-btn help" onclick="event.preventDefault(); MenuUI.showHelp(); return false;">Help</button>
-                            <button type="button" class="menu-btn exit" onclick="event.preventDefault(); MenuUI.exitGame(); return false;">Exit</button>
                         </div>
                     `;
                     
@@ -654,7 +659,6 @@
                             <button type="button" class="menu-btn options" onclick="event.preventDefault(); MenuUI.showOptions(); return false;">Options</button>
                             <button type="button" class="menu-btn stats" onclick="event.preventDefault(); MenuUI.showStats(); return false;">Statistics</button>
                             <button type="button" class="menu-btn help" onclick="event.preventDefault(); MenuUI.showHelp(); return false;">Help</button>
-                            <button type="button" class="menu-btn exit" onclick="event.preventDefault(); MenuUI.exitGame(); return false;">Exit</button>
                         </div>
                         <button onclick="MenuUI.hideInGameMenu()" style="position: fixed; bottom: 20px; left: 20px; background: rgba(255, 100, 100, 0.9); border: none; color: #fff; border-radius: 50%; cursor: pointer; font-size: 1.5rem; width: 50px; height: 50px; z-index: 1000002; display: flex; align-items: center; justify-content: center; padding: 0;">✕</button>
                     `;
@@ -786,6 +790,90 @@
                         <button onclick="MenuUI.hideInGameMenu()" style="position: fixed; bottom: 20px; left: 20px; background: rgba(255, 100, 100, 0.9); border: none; color: #fff; border-radius: 50%; cursor: pointer; font-size: 1.5rem; width: 50px; height: 50px; z-index: 1000002; display: flex; align-items: center; justify-content: center; padding: 0;">✕</button>
                     `;
                 }
+            },
+
+            // Rewarded confirmation modal
+            showRewardedConfirm: function(message, onYes) {
+                if (!this.overlay) { this.overlay = document.getElementById('menuOverlay'); }
+                if (!this.container) { this.container = document.getElementById('menuContainer'); }
+
+                if (this.overlay) {
+                    this.overlay.style.display = 'flex';
+                }
+
+                // Build lightweight confirmation element
+                if (!this._confirmEl) {
+                    this._confirmEl = document.createElement('div');
+                    this._confirmEl.style.position = 'fixed';
+                    this._confirmEl.style.left = '50%';
+                    this._confirmEl.style.top = '50%';
+                    this._confirmEl.style.transform = 'translate(-50%, -50%)';
+                    this._confirmEl.style.zIndex = '1000003';
+                    this._confirmEl.style.background = 'rgba(0,0,0,0.85)';
+                    this._confirmEl.style.border = '1px solid rgba(255,255,255,0.15)';
+                    this._confirmEl.style.boxShadow = '0 8px 30px rgba(0,0,0,0.5)';
+                    this._confirmEl.style.borderRadius = '10px';
+                    this._confirmEl.style.padding = '16px';
+                    this._confirmEl.style.width = '80%';
+                    this._confirmEl.style.maxWidth = '360px';
+                    this._confirmEl.style.color = '#fff';
+
+                    const text = document.createElement('div');
+                    text.style.fontSize = '0.9rem';
+                    text.style.textAlign = 'center';
+                    text.style.marginBottom = '12px';
+                    text.id = 'rvConfirmText';
+                    this._confirmEl.appendChild(text);
+
+                    const btnRow = document.createElement('div');
+                    btnRow.style.display = 'flex';
+                    btnRow.style.gap = '10px';
+                    btnRow.style.justifyContent = 'center';
+
+                    const yesBtn = document.createElement('button');
+                    yesBtn.textContent = 'YES';
+                    yesBtn.style.background = 'linear-gradient(45deg, #00ff88, #00ccff)';
+                    yesBtn.style.color = '#000';
+                    yesBtn.style.border = 'none';
+                    yesBtn.style.borderRadius = '6px';
+                    yesBtn.style.padding = '10px 16px';
+                    yesBtn.style.fontWeight = 'bold';
+                    yesBtn.style.cursor = 'pointer';
+
+                    const noBtn = document.createElement('button');
+                    noBtn.textContent = 'NO';
+                    noBtn.style.background = 'rgba(255,255,255,0.1)';
+                    noBtn.style.color = '#fff';
+                    noBtn.style.border = '1px solid rgba(255,255,255,0.2)';
+                    noBtn.style.borderRadius = '6px';
+                    noBtn.style.padding = '10px 16px';
+                    noBtn.style.cursor = 'pointer';
+
+                    btnRow.appendChild(yesBtn);
+                    btnRow.appendChild(noBtn);
+                    this._confirmEl.appendChild(btnRow);
+
+                    document.body.appendChild(this._confirmEl);
+
+                    noBtn.addEventListener('click', () => {
+                        this._confirmEl.style.display = 'none';
+                    });
+                    yesBtn.addEventListener('click', () => {
+                        this._confirmEl.style.display = 'none';
+                        try { if (typeof onYes === 'function') { onYes(); } } catch(e) {}
+                    });
+                }
+
+                const msgEl = this._confirmEl.querySelector('#rvConfirmText');
+                if (msgEl) { msgEl.textContent = message || 'Watch a video to continue?'; }
+                this._confirmEl.style.display = 'block';
+            },
+
+            // Helper to trigger rewarded via confirmation
+            requestRewarded: function(message) {
+                this.showRewardedConfirm(message || 'Watch a video to get extra life?', function() {
+                    try { if (typeof showAdRewarded === 'function') { showAdRewarded(); } } catch(e) {}
+                });
             },
             
             showHelp: function() {
