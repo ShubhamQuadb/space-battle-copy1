@@ -8,16 +8,15 @@ define(["model/sounds", "model/images", "model/canvas", "model/character", "mode
         console.log("Space Battle: Initializing JioGames SDK...");
         
         // Get user profile on game initialization
-        // if (typeof getUserProfile === 'function') {
-        //     getUserProfile();
-        //     console.log("Space Battle: getUserProfile() called");
-        // }
+        if (typeof getUserProfile === 'function') {
+            getUserProfile();
+            console.log("Space Battle: getUserProfile() called");
+        }
         
-        // Cache ads on game initialization
-        // if (typeof gameCacheAd === 'function') {
-        //     gameCacheAd();
-        //     console.log("Space Battle: gameCacheAd() called - Ads caching started");
-        // }
+        // Load banner after game load, and show at bottom in menu context
+        if (typeof loadBanner === 'function') {
+            try { loadBanner(); } catch(e) {}
+        }
         
         LSM.init();
         LSM.load();

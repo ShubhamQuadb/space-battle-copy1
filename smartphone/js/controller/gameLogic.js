@@ -44,11 +44,18 @@ define(["model/game", "model/character", "model/inPlay", "model/canvas", "model/
     var startLevel = function startLevel() {
         console.log("Space Battle: Starting Level " + Game.level);
         
-        // Cache ad for next game over (JioGames SDK)
-        // if (typeof cacheAd === 'function') {
-        //     cacheAd();
-        //     console.log("Space Battle: Caching midroll ad for level " + Game.level);
-        // }
+        // Cache ads only at level start (per JioGames guidelines)
+        if (typeof cacheAd === 'function') {
+            cacheAd();
+            console.log("Space Battle: Caching midroll ad for level " + Game.level);
+        }
+        // If also caching rewarded at level start, delay by 5 seconds
+        if (typeof cacheAdRewarded === 'function') {
+            setTimeout(function() {
+                cacheAdRewarded();
+                console.log("Space Battle: Caching rewarded ad (delayed 5s) for level " + Game.level);
+            }, 5000);
+        }
         
         setTimeout(function () {
             if (!Game.muteSFX) {
@@ -262,18 +269,18 @@ define(["model/game", "model/character", "model/inPlay", "model/canvas", "model/
         GameLogic.saveStats();
         
         // Post score to JioGames SDK (always post current score)
-        // if (typeof postScore === 'function') {
-        //     postScore(finalScore);
-        //     console.log("Space Battle: Score posted to SDK - " + finalScore);
-        // }
+        if (typeof postScore === 'function') {
+            postScore(finalScore);
+            console.log("Space Battle: Score posted to SDK - " + finalScore);
+        }
         
         // Show midroll ad on game over (JioGames SDK)
-        // if (typeof showAd === 'function') {
-        //     setTimeout(function() {
-        //         showAd();
-        //         console.log("Space Battle: Showing midroll ad");
-        //     }, 500);
-        // }
+        if (typeof showAd === 'function') {
+            setTimeout(function() {
+                showAd();
+                console.log("Space Battle: Showing midroll ad");
+            }, 500);
+        }
         
         GameLogic.uploadStats(isHighscore);
         Game.screen = "game_over";
